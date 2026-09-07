@@ -1,16 +1,50 @@
-# React + Vite
+# Configurator
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A configurator for a media consol with a built in vinyl player.
 
-Currently, two official plugins are available:
+## Installation
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Project structure
 
-## React Compiler
+```
+src/
+├── App.jsx
+├── main.jsx
+│
+├── canvas/                    # everything that lives inside <Canvas>
+│   ├── Scene.jsx               # top-level scene: lights, camera, environment
+│   ├── models/
+│   │   ├── ProductModel.jsx    # the main configurable 3D object
+│   │   └── parts/               # if the model is split into swappable parts
+│   │       ├── Body.jsx
+│   │       └── Wheels.jsx
+│   └── effects/
+│       └── PostProcessing.jsx
+│
+├── config/                    # ← THE CONFIGURATION LOGIC LIVES HERE
+│   ├── configuratorSchema.js   # defines what CAN be configured (options, materials, prices)
+│   ├── configuratorStore.js    # Zustand store: current SELECTED state
+│   └── configuratorRules.js    # optional: dependencies/constraints between options
+│
+├── ui/                         # 2D UI outside the canvas
+│   ├── OptionPanel.jsx
+│   ├── ColorPicker.jsx
+│   └── SummaryPanel.jsx
+│
+├── hooks/
+│   └── useConfigurator.js      # convenience hook wrapping the store
+│
+└── assets/
+    ├── models/                 # .glb/.gltf files
+    └── textures/
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Team
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- Wilma (DD)
+- Linn S. (DD)
+- Simon Torstensson (CG)
+- Arvid Wallesten (CG)
+- Elin Ekeroth (CG)
+- Nathalie Rosenkvist (WU)
+- Patricia Loayza Frykberg (WU)
