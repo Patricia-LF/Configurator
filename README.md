@@ -51,24 +51,6 @@ npm run preview
 
 ```
 src/
-├── App.jsx              # Main component
-├── main.jsx             # Entry point
-├── canvas/               # Everything rendered inside <Canvas> (scene, models, effects)
-├── config/                # Configuration logic (which parameters can be changed)
-├── ui/                    # 2D UI outside the canvas
-├── hooks/                 # Custom React hooks
-└── assets/                # 3D models (.glb/.gltf) and textures
-```
-
-### Troubleshooting
-
-- **Port already in use** — Vite automatically picks the next available port if `5173` is taken; check the terminal output for the correct URL.
-- **`npm install` fails** — make sure you're running a recent enough Node.js version (`node -v`).
-
-## Project structure
-
-```
-src/
 ├── App.jsx
 ├── main.jsx
 │
@@ -98,6 +80,46 @@ src/
 └── assets/
     └── textures/                 # keep .glb/.gltf in public/models/ instead — see note below
 
+```
+
+### Troubleshooting
+
+- **Port already in use** — Vite automatically picks the next available port if `5173` is taken; check the terminal output for the correct URL.
+- **`npm install` fails** — make sure you're running a recent enough Node.js version (`node -v`).
+
+## Project structure
+
+```
+src/
+├── App.jsx
+├── main.jsx
+│
+├── canvas/                    # everything that lives inside <Canvas>
+│   ├── Scene.jsx               # top-level scene: lights, camera, environment
+│   ├── models/
+│   │   ├── ProductModel.jsx    # the main configurable 3D object
+│   │   └── parts/               # if the model is split into swappable parts
+│   │       ├── Body.jsx
+│   │       └── Wheels.jsx
+│   └── effects/
+│       └── PostProcessing.jsx
+│
+├── config/                    # ← THE CONFIGURATION LOGIC LIVES HERE
+│   ├── configuratorSchema.js   # defines what CAN be configured (options, materials, prices)
+│   ├── configuratorStore.js    # Zustand store: current SELECTED state
+│   └── configuratorRules.js    # optional: dependencies/constraints between options
+│
+├── ui/                         # 2D UI outside the canvas
+│   ├── OptionPanel.jsx
+│   ├── ColorPicker.jsx
+│   └── SummaryPanel.jsx
+│
+├── hooks/
+│   └── useConfigurator.js      # convenience hook wrapping the store
+│
+└── assets/
+    ├── models/                 # .glb/.gltf files
+    └── textures/
 ```
 
 ## Team
