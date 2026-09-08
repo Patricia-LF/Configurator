@@ -50,35 +50,43 @@ npm run preview
 ### Project Structure
 
 ```
-src/
-├── App.jsx
-├── main.jsx
+project-root/
+├── public/
+│   └── models/                  # .glb/.gltf files — served as-is, no bundling
+│       └── product.glb
 │
-├── canvas/                     # everything that lives inside <Canvas>
-│   ├── Scene.jsx                # lights, camera, environment
-│   ├── models/
-│   │   ├── ProductModel.jsx     # main configurable 3D object
-│   │   └── parts/                # only needed if the model is split into swappable meshes
-│   │       ├── Body.jsx
-│   │       └── Wheels.jsx
-│   └── effects/                 # optional — skip until core features work
-│       └── PostProcessing.jsx
+├── src/
+│   ├── App.jsx
+│   ├── main.jsx
+│   │
+│   ├── canvas/                   # everything that lives inside <Canvas>
+│   │   ├── Scene.jsx              # lights, camera, environment
+│   │   ├── models/
+│   │   │   ├── ProductModel.jsx   # main configurable 3D object
+│   │   │   └── parts/              # only needed if the model is split into swappable meshes
+│   │   │       ├── Body.jsx
+│   │   │       └── Wheels.jsx
+│   │   └── effects/                # optional — skip until core features work
+│   │       └── PostProcessing.jsx
+│   │
+│   ├── config/                    # configuration logic
+│   │   ├── configuratorSchema.js   # defines what CAN be configured (options, materials)
+│   │   ├── configuratorState.js    # current SELECTED state — Context/useState first
+│   │   └── configuratorRules.js    # optional: dependencies/constraints between options
+│   │
+│   ├── ui/                         # 2D UI outside the canvas
+│   │   ├── OptionPanel.jsx
+│   │   ├── ColorPicker.jsx
+│   │   └── SummaryPanel.jsx
+│   │
+│   ├── hooks/
+│   │   └── useConfigurator.js      # hook exposing config state + setters to components
+│   │
+│   └── assets/                     # only small bundled assets (icons, fonts, small textures)
 │
-├── config/                     # configuration logic
-│   ├── configuratorSchema.js    # defines what CAN be configured (options, materials)
-│   ├── configuratorState.js     # current SELECTED state — plain React Context or useState first
-│   └── configuratorRules.js     # optional: dependencies/constraints between options
-│
-├── ui/                          # 2D UI outside the canvas
-│   ├── OptionPanel.jsx
-│   ├── ColorPicker.jsx
-│   └── SummaryPanel.jsx
-│
-├── hooks/
-│   └── useConfigurator.js       # hook exposing config state + setters to components
-│
-└── assets/
-    └── textures/                 # keep .glb/.gltf in public/models/ instead — see note below
+├── index.html
+├── vite.config.js
+└── package.json
 
 ```
 
