@@ -1,7 +1,13 @@
+import { Header } from "./components/Header";
+import { Footer } from "./components/Footer";
+import { Scene } from ".canvas/Scene";
+
 function App() {
   return (
     <div className="App">
-      <header className="App-header"></header>
+      <Header />
+      <Scene />
+      <Footer />
     </div>
   );
 }
