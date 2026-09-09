@@ -52,37 +52,42 @@ npm run preview
 ```
 project-root/
 ├── public/
-│   └── models/                  # .glb/.gltf files — served as-is, no bundling
-│       └── product.glb
+│   └── models/
+│       └── mediaconsole.glb        # entire model, named groups inside (Body, Legs, Speaker, VinylPlayer)
 │
 ├── src/
 │   ├── App.jsx
+│   ├── App.css
 │   ├── main.jsx
+│   ├── index.css
 │   │
-│   ├── canvas/                   # everything that lives inside <Canvas>
-│   │   ├── Scene.jsx              # lights, camera, environment
-│   │   ├── models/
-│   │   │   ├── ProductModel.jsx   # main configurable 3D object
-│   │   │   └── parts/              # only needed if the model is split into swappable meshes
-│   │   │       ├── Body.jsx
-│   │   │       └── Wheels.jsx
-│   │   └── effects/                # optional — skip until core features work
-│   │       └── PostProcessing.jsx
+│   ├── assets/
+│   │   └── icons/                  # small bundled assets (menu, player, and UI icons)
 │   │
-│   ├── config/                    # configuration logic
-│   │   ├── configuratorSchema.js   # defines what CAN be configured (options, materials)
-│   │   ├── configuratorState.js    # current SELECTED state — Context/useState first
-│   │   └── configuratorRules.js    # optional: dependencies/constraints between options
+│   ├── canvas/
+│   │   ├── Scene.jsx
+│   │   └── ProductModel.jsx        # reads nodes.Body, nodes.Legs, nodes.Speaker, etc. from the glb file
 │   │
-│   ├── ui/                         # 2D UI outside the canvas
-│   │   ├── OptionPanel.jsx
-│   │   ├── ColorPicker.jsx
-│   │   └── SummaryPanel.jsx
+│   ├── components/
+│   │   ├── configurator/
+│   │   │    ├── DropdownButton.jsx
+│   │   │    ├── DropdownButton.module.css
+│   │   │    ├── ColorButton.jsx
+│   │   │    ├── ColorButton.module.css
+│   │   │    ├── SwitchButton.jsx
+│   │   │    └── SwitchButton.module.css
+│   │   │
+│   │   └── music-player/
+│   │        ├── MusicPlayer.jsx
+│   │        └── MusicPlayer.module.css
+│   │
+│   ├── config/
+│   │   └── productOptions.js       # defines available parameters and options per part
 │   │
 │   ├── hooks/
-│   │   └── useConfigurator.js      # hook exposing config state + setters to components
+│   │   └── useConfigurator.js      # exposes selected state + setters
 │   │
-│   └── assets/                     # only small bundled assets (icons, fonts, small textures)
+│   └── ui/                         # for future 2D UI pieces that aren't standalone components yet
 │
 ├── index.html
 ├── vite.config.js
@@ -94,41 +99,6 @@ project-root/
 
 - **Port already in use** — Vite automatically picks the next available port if `5173` is taken; check the terminal output for the correct URL.
 - **`npm install` fails** — make sure you're running a recent enough Node.js version (`node -v`).
-
-## Project structure
-
-```
-src/
-├── App.jsx
-├── main.jsx
-│
-├── canvas/                    # everything that lives inside <Canvas>
-│   ├── Scene.jsx               # top-level scene: lights, camera, environment
-│   ├── models/
-│   │   ├── ProductModel.jsx    # the main configurable 3D object
-│   │   └── parts/               # if the model is split into swappable parts
-│   │       ├── Body.jsx
-│   │       └── Wheels.jsx
-│   └── effects/
-│       └── PostProcessing.jsx
-│
-├── config/                    # ← THE CONFIGURATION LOGIC LIVES HERE
-│   ├── configuratorSchema.js   # defines what CAN be configured (options, materials, prices)
-│   ├── configuratorStore.js    # Zustand store: current SELECTED state
-│   └── configuratorRules.js    # optional: dependencies/constraints between options
-│
-├── ui/                         # 2D UI outside the canvas
-│   ├── OptionPanel.jsx
-│   ├── ColorPicker.jsx
-│   └── SummaryPanel.jsx
-│
-├── hooks/
-│   └── useConfigurator.js      # convenience hook wrapping the store
-│
-└── assets/
-    ├── models/                 # .glb/.gltf files
-    └── textures/
-```
 
 ## Team
 
