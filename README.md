@@ -64,30 +64,27 @@ project-root/
 │   ├── assets/
 │   │   └── icons/                  # small bundled assets (menu, player, and UI icons)
 │   │
-│   ├── canvas/
-│   │   ├── Scene.jsx
+│   ├── canvas/                     # everything that lives inside <Canvas>
+│   │   ├── Scene.jsx               # lights, camera, environment
 │   │   └── ProductModel.jsx        # reads nodes.Body, nodes.Legs, nodes.Speaker, etc. from the glb file
 │   │
 │   ├── components/
 │   │   ├── configurator/
-│   │   │    ├── DropdownButton.jsx
-│   │   │    ├── DropdownButton.module.css
-│   │   │    ├── ColorButton.jsx
-│   │   │    ├── ColorButton.module.css
-│   │   │    ├── SwitchButton.jsx
-│   │   │    └── SwitchButton.module.css
-│   │   │
+│   │   │   ├── DropdownButton.jsx
+│   │   │   ├── DropdownButton.module.css
+│   │   │   ├── ColorButton.jsx
+│   │   │   └── SwitchButton.jsx
 │   │   └── music-player/
-│   │        ├── MusicPlayer.jsx
-│   │        └── MusicPlayer.module.css
+│   │       ├── MusicPlayer.jsx
+│   │       └── MusicPlayer.module.css
 │   │
-│   ├── config/
-│   │   └── productOptions.js       # defines available parameters and options per part
+│   ├── config/                     # configuration logic
+│   │   ├── productOptions.js       # defines what CAN be configured (options, materials)
+│   │   ├── ConfiguratorContext.jsx # Context + Provider holding the currently SELECTED state
+│   │   └── configuratorRules.js    # optional: dependencies/constraints between options
 │   │
-│   ├── hooks/
-│   │   └── useConfigurator.js      # exposes selected state + setters
-│   │
-│   └── ui/                         # for future 2D UI pieces that aren't standalone components yet
+│   └── hooks/
+│       └── useConfigurator.js      # convenience hook wrapping the Context
 │
 ├── index.html
 ├── vite.config.js
