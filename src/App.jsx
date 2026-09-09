@@ -3,6 +3,7 @@ import VinylCoverflow from "./components/VinylCoverflow";
 import Scene from "./canvas/Scene";
 
 function App() {
+
   return (
     <div className="App">
       <VinylCoverflow
