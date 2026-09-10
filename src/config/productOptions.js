@@ -1,17 +1,24 @@
 // Defines the available options for each configurable parameter
 
 // Shared option list — reused for both cabinet and legs
-const woodVeneerOptions = ["Walnut", "Maple", "Mahogany"];
+const woodVeneerOptions = [
+  { label: "Walnut", value: "Walnut" },
+  { label: "Maple", value: "Maple" },
+  { label: "Mahogany", value: "Mahogany" },
+];
 
 export const productOptions = {
   cabinet: {
     size: {
       label: "Cabinet Size",
-      options: ["180cm", "240cm"],
+      options: ["118cm", "200cm"],
     },
     surface: {
       label: "Cabinet Surface",
-      options: ["Smooth", "Textured"],
+      options: [
+        { label: "Smooth", value: "Smooth" },
+        { label: "Textured", value: "Textured" },
+      ],
     },
     woodVeneer: {
       label: "Wood Veneer",
@@ -22,18 +29,28 @@ export const productOptions = {
   speaker: {
     included: {
       label: "Built-in Speaker",
-      options: ["No", "Yes"],
+      options: [
+        { label: "No", value: "No" },
+        { label: "Yes", value: "Yes" },
+      ],
     },
     grille: {
       label: "Speaker Grille",
-      options: ["Light", "Dark"],
+      options: [
+        { label: "Light", value: "Light" },
+        { label: "Dark", value: "Dark" },
+      ],
     },
   },
 
   legs: {
     material: {
       label: "Leg Material",
-      options: ["Silver", "Gold", ...woodVeneerOptions],
+      options: [
+        { label: "Silver", value: "Silver" },
+        { label: "Gold", value: "Gold" },
+        ...woodVeneerOptions,
+      ],
     },
   },
 
