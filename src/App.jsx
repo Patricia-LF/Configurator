@@ -1,5 +1,4 @@
 import { useState } from "react";
-import VinylStack from "./components/VinylStack";
 import VinylCoverflow from "./components/VinylCoverflow";
 import Scene from "./canvas/Scene";
 
