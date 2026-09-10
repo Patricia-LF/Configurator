@@ -1,19 +1,11 @@
-import { useState, useRef, useEffect } from 'react';
+import { useRef } from 'react';
 import './SwitchButton.css';
 
 export default function SwitchButton({ label, options, value, onChange }) {
-    const [activeIndex, setActiveIndex] = useState(
-        Math.max(0, options.findIndex((o) => o.value === value))
-    );
+    const activeIndex = Math.max(0, options.findIndex((o) => o.value === value));
     const ref = useRef([]);
 
-    useEffect(() => {
-        const i = options.findIndex((o) => o.value === value);
-        if (i !== -1) setActiveIndex(i);
-    }, [value, options]);
-
     const handleClick = (index) => {
-        setActiveIndex(index);
         onChange(options[index].value);
     };
 
