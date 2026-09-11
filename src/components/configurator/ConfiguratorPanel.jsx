@@ -1,9 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import OptionCard from "./OptionCard";
-import SwitchButton from "./SwitchButton";
+import OptionButton from "./OptionButton";
 import { useConfigurator } from "../../hooks/useConfigurator";
 import { productOptions } from "../../config/productOptions";
-import { getLegMaterialOptions } from "../../config/configuratorRules";
+import {
+  getLegMaterialOptions,
+  isSpeakerAvailable,
+  speakerUnavailableMessage,
+} from "../../config/configuratorRules";
 import styles from "./ConfiguratorPanel.module.css";
 
 function ConfiguratorPanel() {
@@ -26,26 +30,34 @@ function ConfiguratorPanel() {
     });
   }
 
-  // Advance to the next card once every parameter on the current card has been touched
+  // Advance to the next card once every required parameter on the current card has been touched
   useEffect(() => {
     const currentPart = partKeys[currentStepIndex];
-    const totalParams = Object.keys(productOptions[currentPart]).length;
+    const paramKeys = Object.keys(productOptions[currentPart]);
+
+    // Speaker params don't need to be touched if speaker isn't available at all
+    const speakerUnavailable =
+      currentPart === "speaker" && !isSpeakerAvailable(selected.cabinet.size);
+
+    const requiredParamCount = speakerUnavailable ? 0 : paramKeys.length;
     const touchedCount = touchedParams[currentPart]?.size ?? 0;
 
-    if (touchedCount === totalParams) {
+    if (touchedCount >= requiredParamCount) {
       if (currentStepIndex < partKeys.length - 1) {
         setCurrentStepIndex((prev) => prev + 1);
       } else {
         setIsComplete(true);
       }
     }
-  }, [touchedParams, currentStepIndex]);
+  }, [touchedParams, currentStepIndex, selected.cabinet.size]);
 
   // Auto-scroll to the bottom so the newest card is visible, pushing older ones out of view above
   useEffect(() => {
     if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTop =
-        scrollContainerRef.current.scrollHeight;
+      scrollContainerRef.current.scrollTo({
+        top: scrollContainerRef.current.scrollHeight,
+        behavior: "smooth",
+      });
     }
   }, [currentStepIndex]);
 
@@ -67,14 +79,23 @@ function ConfiguratorPanel() {
                   ? getLegMaterialOptions(selected.cabinet.woodVeneer)
                   : param.options;
 
+                const isSpeakerParam = partKey === "speaker";
+                const speakerAvailable = isSpeakerAvailable(
+                  selected.cabinet.size,
+                );
+
                 return (
-                  <SwitchButton
+                  <OptionButton
                     key={paramKey}
                     label={param.label}
                     options={options}
                     value={selected[partKey][paramKey]}
                     onChange={(value) =>
                       handleOptionChange(partKey, paramKey, value)
+                    }
+                    disabled={isSpeakerParam && !speakerAvailable}
+                    disabledMessage={
+                      isSpeakerParam ? speakerUnavailableMessage : undefined
                     }
                   />
                 );
