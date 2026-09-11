@@ -1,0 +1,18 @@
+/* --- ConfiguratorPanel --- */
+/* Positioned by its parent (see .scene-stage in App.css) — this just lays
+   out the switch buttons inside the panel itself. */
+.configurator-panel {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: min(320px, calc(100vw - 48px));
+  pointer-events: none;
+}
+
+.configurator-panel > * {
+  pointer-events: auto;
+}
