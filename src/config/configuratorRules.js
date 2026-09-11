@@ -8,6 +8,7 @@ export function getLegMaterialOptions(selectedCabinetWood) {
     ...legMaterialBaseOptions,
     { label: selectedCabinetWood, value: selectedCabinetWood },
   ];
+}
 // Maps ConfiguratorContext's `selected` state to which named meshes in the
 // product GLB (3D_TO_WEB_PREVIEW_3.glb) should be visible.
 //
