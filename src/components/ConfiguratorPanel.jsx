@@ -2,7 +2,7 @@ import { useConfigurator } from "../hooks/useConfigurator";
 import { productOptions } from "../config/productOptions";
 import { isSpeakerAllowed } from "../config/configuratorRules";
 import SwitchButton from "./SwitchButton";
-import "./ConfiguratorPanel.css";
+import styles from "./ConfiguratorPanel.module.css";
 
 // One switch button per productOptions field, excluding swatch-style fields
 // (e.g. turntable.baseColor) which are meant for ColorButton instead.
@@ -30,7 +30,7 @@ export default function ConfiguratorPanel() {
   };
 
   return (
-    <div className="configurator-panel">
+    <div className={styles["configurator-panel"]}>
       {controls.map(({ part, param, label, options }) => (
         <SwitchButton
           key={`${part}.${param}`}

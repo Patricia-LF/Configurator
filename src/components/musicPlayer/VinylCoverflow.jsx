@@ -49,7 +49,7 @@ export default function VinylCoverflow({ disks, onSelect, exiting = false, onExi
 
   return (
     <div
-      className={coverflowClassName}
+      className={styles.coverflow}
       onTransitionEnd={(e) => {
         if (exiting && e.propertyName === "transform") onExited?.();
       }}
