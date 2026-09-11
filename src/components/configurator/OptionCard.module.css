@@ -1,0 +1,39 @@
+.optionCard {
+  width: 432px;
+  display: flex;
+  padding: 32px 12px;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  align-self: stretch;
+  border-radius: 32px;
+  border: 1px solid #ffdbc6;
+  background: rgba(43, 21, 12, 0.4);
+}
+
+.cardInfo {
+  display: flex;
+  padding: 0 26px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 32px;
+  align-self: stretch;
+}
+
+.titleContainer {
+  display: flex;
+  height: 64px;
+  padding-right: 229px;
+  align-items: center;
+  align-self: stretch;
+}
+
+.title {
+  color: #ffdbc6;
+  font-family: "Clash Display Variable";
+  font-size: 64px;
+  text-transform: capitalize;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 100%; /* 64px */
+}

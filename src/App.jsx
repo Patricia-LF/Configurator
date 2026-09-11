@@ -1,21 +1,16 @@
 import { useState } from "react";
-import VinylCoverflow from "./components/VinylCoverflow";
+import VinylCoverflow from "./components/musicPlayer/VinylCoverflow";
 import Scene from "./canvas/Scene";
 import { useConfigurator } from "./hooks/useConfigurator";
+import MusicPlayer from "./components/musicPlayer/MusicPlayer";
+import ConfiguratorPanel from "./components/configurator/ConfiguratorPanel";
 
 function App() {
   const { selected, setOption } = useConfigurator();
 
-  console.log(selected);
-
   return (
     <div className="App">
-      <div className="App">
-        {/* temporary test button — remove once real UI is wired up */}
-        <button onClick={() => setOption("legs", "material", "Gold")}>
-          Test: set legs material to Gold
-        </button>
-      </div>
+      <Scene />
       <VinylCoverflow
         disks={[
           {
@@ -45,7 +40,8 @@ function App() {
           },
         ]}
       />
-      <Scene />
+      <MusicPlayer />
+      <ConfiguratorPanel />
     </div>
   );
 }

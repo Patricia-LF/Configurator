@@ -1,10 +1,10 @@
 import { useState } from "react";
 import ReactPlayer from "react-player";
 import styles from "./MusicPlayer.module.css";
-import recordIcon from "../assets/icons/Record.png";
-import pauseBtn from "../assets/icons/pause-btn.png";
-import nextBtn from "../assets/icons/next-btn.png";
-import playBtn from "../assets/icons/play-btn.png";
+import recordIcon from "../../assets/icons/vinyl.png";
+import pauseBtn from "../../assets/icons/pause-btn.png";
+import nextBtn from "../../assets/icons/next-btn.png";
+import playBtn from "../../assets/icons/play-btn.png";
 
 // Example of an album with tracks
 const album = [

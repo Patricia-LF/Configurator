@@ -1,8 +1,8 @@
 .music-container {
   display: flex;
-  /* width: 525.863px; */
-  height: 258.201px;
   position: fixed;
+  z-index: 10;
+  height: 258.201px;
   bottom: -90px;
   left: -90px;
 }
