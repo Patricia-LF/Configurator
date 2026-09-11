@@ -1,6 +1,6 @@
 // VinylCoverflow.jsx
 import { useState, useRef } from 'react';
-import './VinylCoverflow.css';
+import styles from './VinylCoverflow.module.css';
 
 const HOVER_DELAY = 150;
 
@@ -12,7 +12,7 @@ function getOffset(index, center, length) {
   return diff;
 }
 
-export default function VinylCoverflow({ disks }) {
+export default function VinylCoverflow({ disks, onSelect, exiting = false, onExited }) {
   const [centerIndex, setCenterIndex] = useState(Math.floor(disks.length / 2));
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const hoverTimeout = useRef(null);
@@ -33,9 +33,28 @@ export default function VinylCoverflow({ disks }) {
     clearTimeout(hoverTimeout.current);
   };
 
+  // clicking a side disk centers it; clicking the centered disk selects it
+  const handleClick = (i, disk) => {
+    if (exiting) return;
+    if (i !== centerIndex) {
+      goTo(i);
+      return;
+    }
+    onSelect?.(disk);
+  };
+
+  const coverflowClassName = [styles.coverflow, exiting && styles["coverflow--exiting"]]
+    .filter(Boolean)
+    .join(" ");
+
   return (
-    <div className="coverflow">
-      <div className="coverflow__stage">
+    <div
+      className={coverflowClassName}
+      onTransitionEnd={(e) => {
+        if (exiting && e.propertyName === "transform") onExited?.();
+      }}
+    >
+      <div className={styles.coverflow__stage}>
         {disks.map((disk, i) => {
           const offset = getOffset(i, centerIndex, disks.length);
           const distance = Math.abs(offset);
@@ -55,9 +74,10 @@ export default function VinylCoverflow({ disks }) {
           return (
             <div
               key={disk.id}
-              className="coverflow__item"
+              className={styles.coverflow__item}
               onMouseEnter={() => !isStaging && handleMouseEnter(i)}
               onMouseLeave={() => !isStaging && handleMouseLeave(i)}
+              onClick={() => !isStaging && handleClick(i, disk)}
               style={{
                 transform: `translateX(${translateX}px) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`,
                 opacity: isStaging ? 0 : 1,
@@ -68,7 +88,7 @@ export default function VinylCoverflow({ disks }) {
               <img src={disk.image} alt={disk.label} />
               {!isCenter && (
                 <div
-                  className="coverflow__shade"
+                  className={styles.coverflow__shade}
                   style={{ background: isHovered ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.35)' }}
                 />
               )}

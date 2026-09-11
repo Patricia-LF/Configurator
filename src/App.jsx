@@ -11,6 +11,11 @@ function App() {
   const { selected, setOption } = useConfigurator();
   const { isDarkMode, toggleTheme } = useTheme();
 
+import AlbumSelector from "./components/musicPlayer/AlbumSelector";
+import Scene from "./canvas/Scene";
+import ConfiguratorPanel from "./components/configurator/ConfiguratorPanel";
+
+function App() {
   return (
     <div className="App" data-theme={isDarkMode ? "dark" : "light"}>
       <Scene />
@@ -48,6 +53,7 @@ function App() {
         ]}
       />
       <MusicPlayer />
+      <AlbumSelector />
       <ConfiguratorPanel />
     </div>
   );
