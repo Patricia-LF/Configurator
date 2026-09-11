@@ -1,4 +1,11 @@
 /* OptionButton.module.css */
+@font-face {
+  font-family: "ClashDisplay";
+  src: url(fonts/ClashDisplay-Variable.ttf);
+  font-style: normal;
+  font-weight: 400;
+}
+
 .container {
   display: flex;
   width: 318px;

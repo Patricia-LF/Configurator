@@ -1,3 +1,10 @@
+@font-face {
+  font-family: "ClashDisplay";
+  src: url(fonts/ClashDisplay-Variable.ttf);
+  font-style: normal;
+  font-weight: 400;
+}
+
 .optionCard {
   width: 432px;
   display: flex;
@@ -30,7 +37,7 @@
 
 .title {
   color: #ffdbc6;
-  font-family: "Clash Display Variable";
+  font-family: "ClashDisplay";
   font-size: 64px;
   text-transform: capitalize;
   font-style: normal;

@@ -1,3 +1,10 @@
+@font-face {
+  font-family: "ClashDisplay";
+  src: url(fonts/ClashDisplay-Variable.ttf);
+  font-style: normal;
+  font-weight: 400;
+}
+
 .music-container {
   display: flex;
   position: fixed;
@@ -25,7 +32,7 @@
 .buttons,
 .song-info {
   color: #ffdbc6;
-  font-family: Inter, sans-serif;
+  font-family: "ClashDisplay";
   font-size: 16px;
   font-style: normal;
   font-weight: 400;
