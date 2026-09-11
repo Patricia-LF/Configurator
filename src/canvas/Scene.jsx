@@ -2,14 +2,29 @@ import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { HDRLoader } from 'three/addons/loaders/HDRLoader.js';
-import { loadProductModel, getLightColors, getCameraViews } from './ProductModel';
+import { loadProductModel, getLightColors, getCameraViews, applyProductSelection } from './ProductModel';
+import { useConfigurator } from '../hooks/useConfigurator';
 
 // Files in public/ are served as-is at the site root — reference them by
 // URL, don't import them as modules (Vite will try to parse them as JS).
-// const hdriUrl = '/models/indoor.hdr';
+const hdriUrl = '/models/indoor.hdr';
 
 export default function Scene() {
     const mountRef = useRef(null);
+    const modelRef = useRef(null);
+    const { selected } = useConfigurator();
+
+    // Read via a ref inside the mount effect below so that effect can stay
+    // `[]` (it owns the renderer/animation loop, which shouldn't be torn
+    // down and rebuilt every time an option changes) while still applying
+    // whatever was selected by the time the model finishes loading.
+    const selectedRef = useRef(selected);
+    useEffect(() => {
+        selectedRef.current = selected;
+        if (modelRef.current) {
+            applyProductSelection(modelRef.current, selected);
+        }
+    }, [selected]);
 
     useEffect(() => {
         const mount = mountRef.current;
@@ -37,14 +52,14 @@ export default function Scene() {
 
         // HDRI environment map (ambient/reflection lighting; no manual lights)
         const hdrLoader = new HDRLoader();
-        // hdrLoader.load(hdriUrl, (texture) => {
-        //     texture.mapping = THREE.EquirectangularReflectionMapping;
+        hdrLoader.load(hdriUrl, (texture) => {
+            texture.mapping = THREE.EquirectangularReflectionMapping;
 
-        //     scene.environment = texture;
+            scene.environment = texture;
 
-        //     // solid color background but HDRI reflections:
-        //     scene.background = new THREE.Color(0xaaaaaa);
-        // });
+            // solid color background but HDRI reflections:
+            scene.background = new THREE.Color(0xaaaaaa);
+        });
 
         let fallbackLight;
 
@@ -54,6 +69,9 @@ export default function Scene() {
             model.scale.set(1, 1, 1);
             model.position.set(0, 0, 0);
             scene.add(model);
+
+            modelRef.current = model;
+            applyProductSelection(model, selectedRef.current);
 
             // Lights baked into the GLB (KHR_lights_punctual) are already
             // part of `model`'s hierarchy from `scene.add(model)` above —
@@ -100,6 +118,7 @@ export default function Scene() {
 
         return () => {
             cancelled = true;
+            modelRef.current = null;
             cancelAnimationFrame(frameId);
             window.removeEventListener('resize', handleResize);
             controls.dispose();

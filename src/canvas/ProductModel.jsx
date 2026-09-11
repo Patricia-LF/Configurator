@@ -1,8 +1,13 @@
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { getMeshVisibility } from '../config/configuratorRules';
 
 // Files in public/ are served as-is at the site root — reference them by
 // URL, don't import them as modules (Vite will try to parse them as JS).
-const modelUrl = '/models/3DTOWEBB_PREVIEW_2_OPTIMIZED.glb';
+// This is the variant model — it has the named per-option meshes
+// (Console_*, Cabinet_*/Canbinet_*, Legs_*, Speaker*) that configuratorRules
+// maps productOptions selections onto. 3DTOWEBB_PREVIEW_2_OPTIMIZED.glb is a
+// lighter scene-only export with no per-option geometry.
+const modelUrl = '/models/3D_TO_WEB_PREVIEW_3.glb';
 
 /**
  * Loads the product GLB and pulls out everything embedded in the file:
@@ -74,4 +79,19 @@ export function getCameraViews(cameras) {
         position: camera.position.clone(),
         quaternion: camera.quaternion.clone(),
     }));
+}
+
+/**
+ * Shows/hides the model's per-option meshes to match ConfiguratorContext's
+ * `selected` state, per the mapping in configuratorRules.getMeshVisibility.
+ * Safe to call repeatedly on the same `model` as selections change.
+ */
+export function applyProductSelection(model, selected) {
+    const isVisible = getMeshVisibility(selected);
+
+    model.traverse((child) => {
+        if (child.isMesh) {
+            child.visible = isVisible(child.name);
+        }
+    });
 }
