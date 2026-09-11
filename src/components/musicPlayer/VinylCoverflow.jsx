@@ -1,6 +1,6 @@
 // VinylCoverflow.jsx
 import { useState, useRef } from 'react';
-import './VinylCoverflow.css';
+import styles from './VinylCoverflow.module.css';
 
 const HOVER_DELAY = 150;
 
@@ -34,8 +34,8 @@ export default function VinylCoverflow({ disks }) {
   };
 
   return (
-    <div className="coverflow">
-      <div className="coverflow__stage">
+    <div className={styles.coverflow}>
+      <div className={styles.coverflow__stage}>
         {disks.map((disk, i) => {
           const offset = getOffset(i, centerIndex, disks.length);
           const distance = Math.abs(offset);
@@ -55,7 +55,7 @@ export default function VinylCoverflow({ disks }) {
           return (
             <div
               key={disk.id}
-              className="coverflow__item"
+              className={styles.coverflow__item}
               onMouseEnter={() => !isStaging && handleMouseEnter(i)}
               onMouseLeave={() => !isStaging && handleMouseLeave(i)}
               style={{
@@ -68,7 +68,7 @@ export default function VinylCoverflow({ disks }) {
               <img src={disk.image} alt={disk.label} />
               {!isCenter && (
                 <div
-                  className="coverflow__shade"
+                  className={styles.coverflow__shade}
                   style={{ background: isHovered ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.35)' }}
                 />
               )}
