@@ -9,7 +9,7 @@
 
 .label {
   color: #ffdbc6;
-  font-family: "Clash Display Variable";
+  font-family: "ClashDisplay";
   font-size: 20px;
   font-style: normal;
   font-weight: 400;
@@ -25,6 +25,12 @@
 
 .option {
   display: flex;
+  color: #ffdbc6;
+  font-family: "ClashDisplay";
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
   padding: 8px 0;
   justify-content: center;
   align-items: center;
@@ -37,6 +43,7 @@
 }
 
 .active {
+  color: #ffdbc6;
   border: 1px dashed #ffdbc6;
   background: rgba(255, 219, 198, 0.2);
 }

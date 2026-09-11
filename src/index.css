@@ -11,17 +11,24 @@
   --shadow:
     rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
 
-  --venylbase-bright: #FFFBF8;
-  --venylbase-dark: #211E1E;
+  --venylbase-bright: #fffbf8;
+  --venylbase-dark: #211e1e;
   --venylbase-brown: #402915;
-  --venylbase-blue: #243E94;
-  --venylbase-orange: #CC4C15;
-  --venylbase-green: #52582A;
+  --venylbase-blue: #243e94;
+  --venylbase-orange: #cc4c15;
+  --venylbase-green: #52582a;
   --venylbase-red: #641717;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --sans: system-ui, "Segoe UI", Roboto, sans-serif;
+  --heading: system-ui, "Segoe UI", Roboto, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
+
+  @font-face {
+    font-family: "ClashDisplay";
+    src: url(fonts/ClashDisplay-Variable.ttf);
+    font-style: normal;
+    font-weight: 400;
+  }
 
   font: 18px/145% var(--sans);
   letter-spacing: 0.18px;
@@ -70,9 +77,8 @@ body {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-} */
-
-h1,
+}
+*/ h1,
 h2 {
   font-family: var(--heading);
   font-weight: 500;
