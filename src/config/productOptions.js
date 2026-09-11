@@ -7,11 +7,19 @@ const woodVeneerOptions = [
   { label: "Mahogany", value: "Mahogany" },
 ];
 
+export const legMaterialBaseOptions = [
+  { label: "Silver", value: "Silver" },
+  { label: "Gold", value: "Gold" },
+];
+
 export const productOptions = {
   cabinet: {
     size: {
       label: "Cabinet Size",
-      options: ["118cm", "200cm"],
+      options: [
+        { label: "118cm", value: "118cm" },
+        { label: "200cm", value: "200cm" },
+      ],
     },
     surface: {
       label: "Cabinet Surface",
@@ -46,18 +54,21 @@ export const productOptions = {
   legs: {
     material: {
       label: "Leg Material",
-      options: [
-        { label: "Silver", value: "Silver" },
-        { label: "Gold", value: "Gold" },
-        ...woodVeneerOptions,
-      ],
+      options: [], // actual options are computed dynamically via getLegMaterialOptions()
     },
   },
 
   turntable: {
     baseColor: {
       label: "Base Color",
-      options: ["White", "Black", "Blue", "Orange", "Green", "Red"],
+      options: [
+        { label: "White", value: "White" },
+        { label: "Black", value: "Black" },
+        { label: "Blue", value: "Blue" },
+        { label: "Orange", value: "Orange" },
+        { label: "Green", value: "Green" },
+        { label: "Red", value: "Red" },
+      ],
     },
   },
 };
