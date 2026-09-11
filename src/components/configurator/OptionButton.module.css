@@ -25,34 +25,83 @@
 
 .buttonGroup {
   display: flex;
-  align-items: center;
-  gap: 4px;
+  align-items: flex-start;
+  gap: 12px;
   align-self: stretch;
+  flex-wrap: wrap;
 }
 
-.option {
+.optionWrapper {
   display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Shared across ALL button types — same border everywhere */
+.option {
+  border: 1px solid #ffdbc6;
+  cursor: pointer;
+}
+
+/* Plain text buttons: Size, Surface, Speaker, Grille */
+.textOption {
+  padding: 8px 16px;
+  min-width: 150px;
+  white-space: nowrap;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  background: none;
   color: #ffdbc6;
   font-family: "ClashDisplay";
   font-size: 16px;
   font-style: normal;
   font-weight: 400;
   line-height: normal;
+}
+
+/* Swatch buttons — material/color, shown as background image or hex color */
+.swatch {
+  border-radius: 12px;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  display: flex;
+  height: 36px;
+  width: 96.6px;
   padding: 8px 0;
   justify-content: center;
   align-items: center;
   gap: 8px;
-  flex: 1;
+  align-self: stretch;
   border-radius: 999px;
-  border: 1px solid #ffdbc6;
-  background: none;
-  cursor: pointer;
+  opacity: 0.6;
 }
 
-.active {
+.optionValue {
   color: #ffdbc6;
+  font-family: "ClashDisplay";
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+}
+
+/* Active state for plain text buttons */
+.textOption.active {
   border: 1px dashed #ffdbc6;
   background: rgba(255, 219, 198, 0.2);
+}
+
+/* Active state for swatches: should NOT cover the background image/color */
+.swatch.active {
+  border: 1px dashed #ffdbc6;
+  box-shadow: 0 0 0 2px rgba(255, 219, 198, 0.5);
+  opacity: 1;
 }
 
 .inactive {

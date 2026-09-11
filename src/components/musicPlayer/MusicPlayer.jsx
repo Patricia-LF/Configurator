@@ -9,13 +9,28 @@ import playBtn from "../../assets/icons/play-btn.png";
 // Example of an album with tracks
 const album = [
   {
-    artist: "Daryl Hall & John Oats",
-    title: "Rich Girl",
+    artist: "Dire Straits",
+    title: "Sultans Of Swing",
     url: "https://soundhelix.com",
   },
   {
-    artist: "Dire Straits",
-    title: "Sultans Of Swing",
+    artist: "The Beatles",
+    title: "Hey Jude",
+    url: "https://soundhelix.com",
+  },
+  {
+    artist: "Alphaville",
+    title: "Big In Japan",
+    url: "https://soundhelix.com",
+  },
+  {
+    artist: "Fleetwood Mac",
+    title: "Little Lies",
+    url: "https://soundhelix.com",
+  },
+  {
+    artist: "Pink Floyd",
+    title: "Another Brick In The Wall",
     url: "https://soundhelix.com",
   },
 ];

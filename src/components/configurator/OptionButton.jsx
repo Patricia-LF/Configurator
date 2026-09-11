@@ -1,4 +1,3 @@
-// OptionButton.jsx
 import styles from "./OptionButton.module.css";
 
 export default function OptionButton({
@@ -15,21 +14,23 @@ export default function OptionButton({
       <div className={styles.buttonGroup}>
         {options.map((option) => {
           const isActive = option.value === value;
-          const stateClass = disabled
-            ? styles.inactive
-            : isActive
-              ? styles.active
-              : styles.default;
+          const isSwatch = Boolean(option.background);
+          const typeClass = isSwatch ? styles.swatch : styles.textOption;
 
           return (
-            <button
-              key={option.value}
-              className={`${styles.option} ${stateClass}`}
-              onClick={() => onChange(option.value)}
-              disabled={disabled}
-            >
-              {option.label}
-            </button>
+            <div key={option.value} className={styles.optionWrapper}>
+              <button
+                className={`${styles.option} ${typeClass} ${isActive ? styles.active : ""} ${disabled ? styles.inactive : ""}`}
+                style={isSwatch ? { background: option.background } : undefined}
+                onClick={() => onChange(option.value)}
+                disabled={disabled}
+              >
+                {!isSwatch && option.label}
+              </button>
+              {isSwatch && (
+                <span className={styles.optionValue}>{option.value}</span>
+              )}
+            </div>
           );
         })}
       </div>

@@ -1,15 +1,31 @@
 // Defines the available options for each configurable parameter
 
 // Shared option list — reused for both cabinet and legs
-const woodVeneerOptions = [
-  { label: "Walnut", value: "Walnut" },
-  { label: "Maple", value: "Maple" },
-  { label: "Mahogany", value: "Mahogany" },
+export const woodVeneerOptions = [
+  {
+    label: "Walnut",
+    value: "Walnut",
+    background: "url('/textures/walnut.jpg')",
+  },
+  {
+    label: "Maple",
+    value: "Maple",
+    background: "url('/textures/maple.jpg')",
+  },
+  {
+    label: "Mahogany",
+    value: "Mahogany",
+    background: "url('/textures/mahogany.jpg')",
+  },
 ];
 
 export const legMaterialBaseOptions = [
-  { label: "Silver", value: "Silver" },
-  { label: "Gold", value: "Gold" },
+  {
+    label: "Silver",
+    value: "Silver",
+    background: "url('/textures/silver.png')",
+  },
+  { label: "Gold", value: "Gold", background: "url('/textures/gold.png')" },
 ];
 
 export const productOptions = {
@@ -62,12 +78,12 @@ export const productOptions = {
     baseColor: {
       label: "Base Color",
       options: [
-        { label: "White", value: "White" },
-        { label: "Black", value: "Black" },
-        { label: "Blue", value: "Blue" },
-        { label: "Orange", value: "Orange" },
-        { label: "Green", value: "Green" },
-        { label: "Red", value: "Red" },
+        { label: "White", value: "White", background: "#FFFBF8" },
+        { label: "Black", value: "Black", background: "#211E1E" },
+        { label: "Blue", value: "Blue", background: "#243E94" },
+        { label: "Orange", value: "Orange", background: "#CC4C15" },
+        { label: "Green", value: "Green", background: "#52582A" },
+        { label: "Red", value: "Red", background: "#641717" },
       ],
     },
   },
