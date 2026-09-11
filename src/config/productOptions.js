@@ -36,10 +36,10 @@ export const productOptions = {
 
   speaker: {
     included: {
-      label: "Built-in Speaker",
+      label: "Speakers",
       options: [
-        { label: "No", value: "No" },
-        { label: "Yes", value: "Yes" },
+        { label: "Speakers", value: "Speakers" },
+        { label: "Cabinet Doors", value: "Cabinet Doors" },
       ],
     },
     grille: {

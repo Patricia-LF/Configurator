@@ -23,7 +23,9 @@ function getInitialState() {
 export function ConfiguratorProvider({ children }) {
   const [selected, setSelected] = useState(getInitialState);
 
-  // Updates one parameter for one part, e.g. setOption("legs", "material", "Gold")
+  // Updates one parameter for one part, e.g. setOption("legs", "material", "Gold").
+  // Speaker fields are left as-is on "118cm" — isSpeakerAllowed (configuratorRules.js)
+  // handles hiding/disabling them, so the choice is preserved if size changes back.
   function setOption(part, param, value) {
     setSelected((prev) => ({
       ...prev,
