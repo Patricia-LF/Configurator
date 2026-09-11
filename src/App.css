@@ -1,3 +1,9 @@
+/* Positions ConfiguratorPanel as an overlay on top of the Scene canvas
+   (see ConfiguratorPanel.css), instead of stacking below it in flow. */
+.scene-stage {
+  position: relative;
+}
+
 .counter {
   font-size: 16px;
   padding: 5px 10px;
