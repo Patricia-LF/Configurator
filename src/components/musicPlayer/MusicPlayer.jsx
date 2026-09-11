@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ReactPlayer from "react-player";
 import styles from "./MusicPlayer.module.css";
 import recordIcon from "../../assets/icons/vinyl.png";
@@ -20,18 +20,41 @@ const album = [
   },
 ];
 
-export default function MusicPlayer() {
+// stage moves forward once: hidden -> risen (sliding up) -> done (buttons shown)
+export default function MusicPlayer({ start = false, disk = null }) {
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [stage, setStage] = useState("hidden");
+
+  useEffect(() => {
+    if (!start) return;
+    const frame = requestAnimationFrame(() => setStage("risen"));
+    return () => cancelAnimationFrame(frame);
+  }, [start]);
+
+  const handleRecordTransitionEnd = (event) => {
+    if (stage === "risen" && event.propertyName === "transform") {
+      setStage("done");
+    }
+  };
 
   // Function to switch to the next song
   const nextSong = () => {
     setCurrentSongIndex((prevIndex) => (prevIndex + 1) % album.length);
   };
 
+  const recordClassName = [styles.record, stage !== "hidden" && styles["record--risen"]]
+    .filter(Boolean)
+    .join(" ");
+
   return (
     <section className={styles["music-container"]}>
-      <img src={recordIcon} className={styles.record} />
+      <div className={recordClassName} onTransitionEnd={handleRecordTransitionEnd}>
+        <img src={recordIcon} className={styles["record-disk"]} alt="" />
+        {disk?.image && (
+          <img src={disk.image} className={styles["record-label"]} alt="" />
+        )}
+      </div>
       {/* Actual sound engine that's hidden */}
       <ReactPlayer
         url={album[currentSongIndex].url}
@@ -41,7 +64,9 @@ export default function MusicPlayer() {
         height="0"
       />
 
-      <div className={styles.player}>
+      <div
+        className={`${styles.player} ${stage === "done" ? styles["player--visible"] : ""}`}
+      >
         <div className={styles.buttons}>
           {/* Buttons */}
           <button
