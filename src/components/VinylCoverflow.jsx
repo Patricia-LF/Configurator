@@ -47,9 +47,9 @@ export default function VinylCoverflow({ disks }) {
           const isStaging = distance === 2;
           const isHovered = hoveredIndex === i;
 
-          const translateX = offset * 140;
+          const translateX = offset * 90;
           const rotateY = offset === 0 ? 0 : offset > 0 ? -45 : 45;
-          const translateZ = isHovered && !isCenter && !isStaging ? -30 : -distance * 80;
+          const translateZ = isHovered && !isCenter && !isStaging ? -20 : -distance * 55;
           const scale = isCenter ? 1 : isHovered && !isStaging ? 0.85 : 0.75;
 
           return (
