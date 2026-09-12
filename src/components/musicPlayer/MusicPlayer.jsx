@@ -6,7 +6,7 @@ import pauseBtn from "../../assets/icons/pause-btn.png";
 import nextBtn from "../../assets/icons/next-btn.png";
 import playBtn from "../../assets/icons/play-btn.png";
 
-// Example of an album with tracks
+// Example of an album with tracks - same albums as VinylCoverFlow in App.jsx
 const album = [
   {
     artist: "Dire Straits",
