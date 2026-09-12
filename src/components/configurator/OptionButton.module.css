@@ -1,0 +1,105 @@
+/* OptionButton.module.css */
+.container {
+  display: flex;
+  width: 318px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.label {
+  color: #ffdbc6;
+  font-family: var(--clash-font);
+  font-size: 20px;
+  line-height: normal;
+}
+
+.buttonGroup {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  align-self: stretch;
+  flex-wrap: wrap;
+}
+
+.optionWrapper {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Shared across ALL button types - same border everywhere */
+.option {
+  border: 1px solid #ffdbc6;
+  cursor: pointer;
+}
+
+/* Plain text buttons: Size, Surface, Speaker, Grille */
+.textOption {
+  padding: 8px 16px;
+  min-width: 150px;
+  white-space: nowrap;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  background: none;
+  color: #ffdbc6;
+  font-family: var(--clash-font);
+  font-size: 16px;
+  line-height: normal;
+}
+
+/* Swatch buttons - material/color, shown as background image or hex color */
+.swatch {
+  border-radius: 12px;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  display: flex;
+  height: 36px;
+  width: 96.6px;
+  padding: 8px 0;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  align-self: stretch;
+  border-radius: 999px;
+  opacity: 0.6;
+}
+
+.optionValue {
+  color: #ffdbc6;
+  font-family: var(--clash-font);
+  font-size: 16px;
+  line-height: normal;
+}
+
+/* Active state for plain text buttons */
+.textOption.active {
+  border: 1px dashed #ffdbc6;
+  background: rgba(255, 219, 198, 0.2);
+}
+
+/* Active state for swatches: should NOT cover the background image/color */
+.swatch.active {
+  border: 1px dashed #ffdbc6;
+  box-shadow: 0 0 0 2px rgba(255, 219, 198, 0.5);
+  opacity: 1;
+}
+
+.inactive {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.disabledMessage {
+  color: #ffdbc6;
+  font-family: var(--clash-font);
+  font-size: 13px;
+  opacity: 0.7;
+  margin: 4px 0 0 0;
+}

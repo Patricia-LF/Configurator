@@ -1,16 +1,23 @@
 import { useState } from "react";
-import VinylCoverflow from "./components/musicPlayer/VinylCoverflow";
 import Scene from "./canvas/Scene";
+import ToggleSwitch from "./components/theme/ToggleSwitch";
+import { useTheme } from "./hooks/useTheme";
+import ConfiguratorPanel from "./components/configurator/ConfiguratorPanel";
 import { useConfigurator } from "./hooks/useConfigurator";
 import MusicPlayer from "./components/musicPlayer/MusicPlayer";
-import ConfiguratorPanel from "./components/configurator/ConfiguratorPanel";
+import VinylCoverflow from "./components/musicPlayer/VinylCoverflow";
 
 function App() {
   const { selected, setOption } = useConfigurator();
+  const { isDarkMode, toggleTheme } = useTheme();
 
   return (
-    <div className="App">
+    <div className="App" data-theme={isDarkMode ? "dark" : "light"}>
       <Scene />
+      <ToggleSwitch
+        value={isDarkMode ? "Dark" : "Light"}
+        onChange={(newValue) => toggleTheme()}
+      />
       <VinylCoverflow
         disks={[
           {

@@ -25,10 +25,8 @@
 .buttons,
 .song-info {
   color: #ffdbc6;
-  font-family: Inter, sans-serif;
+  font-family: var(--clash-font);
   font-size: 16px;
-  font-style: normal;
-  font-weight: 400;
   line-height: normal;
 }
 
