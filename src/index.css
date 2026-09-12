@@ -6,9 +6,10 @@
 }
 
 :root {
+  /*Dark mode*/
   --text: #ffdbc6;
-  --bg: #16171d;
   --border: #ffdbc6;
+  --card-bg: rgba(43, 21, 12, 0.4);
   --clash-font: "ClashDisplay";
 
   --venylbase-bright: #fffbf8;
@@ -31,8 +32,8 @@
 
 [data-theme="light"] {
   --text: #2b150c;
-  --bg: #fff;
   --border: #2b150c;
+  --card-bg: rgba(255, 234, 225, 0.4);
 }
 
 body {
@@ -49,7 +50,7 @@ body {
   box-sizing: border-box;
 }
 
-*/ h1,
+h1,
 h2,
 h3,
 p {
