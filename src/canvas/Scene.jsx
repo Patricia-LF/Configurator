@@ -7,7 +7,7 @@ import { useConfigurator } from '../hooks/useConfigurator';
 
 // Files in public/ are served as-is at the site root — reference them by
 // URL, don't import them as modules (Vite will try to parse them as JS).
-const hdriUrl = '/models/indoor.hdr';
+const hdriUrl = '/models/studio.hdr';
 
 export default function Scene() {
     const mountRef = useRef(null);
@@ -33,7 +33,10 @@ export default function Scene() {
         const scene = new THREE.Scene();
 
         const camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.1, 1000 );
-        camera.position.set( 0, 0.5, 2 );
+        camera.filmGauge = 36;
+        camera.setFocalLength(50);
+        camera.updateProjectionMatrix();
+        camera.position.set( 0, 0.8, 4 );
 
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(mount.clientWidth, mount.clientHeight);
@@ -43,12 +46,12 @@ export default function Scene() {
         mount.appendChild(renderer.domElement);
 
         // Controls how much the environment affects the materials
-        scene.environmentIntensity = 1; // Brighter reflections
+        scene.environmentIntensity = 0.6; // Dimmer reflections
 
         // Modern Three.js also uses tone mapping to handle "bright" HDR data
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 0.5; // Increase for a brighter look
-        renderer.outputColorSpace = THREE.SRGBColorSpace;
+        // renderer.toneMappingExposure = 0.5; // Increase for a brighter look
+        // renderer.outputColorSpace = THREE.SRGBColorSpace;
 
         // HDRI environment map (ambient/reflection lighting; no manual lights)
         const hdrLoader = new HDRLoader();
@@ -57,8 +60,6 @@ export default function Scene() {
 
             scene.environment = texture;
 
-            // solid color background but HDRI reflections:
-            scene.background = new THREE.Color(0xaaaaaa);
         });
 
         let fallbackLight;
@@ -67,7 +68,7 @@ export default function Scene() {
             if (cancelled) return;
 
             model.scale.set(1, 1, 1);
-            model.position.set(0, 0, 0);
+            model.position.set(-0.2, -0.4, 0);
             scene.add(model);
 
             modelRef.current = model;
@@ -82,8 +83,8 @@ export default function Scene() {
             if (lights.length === 0) {
                 // Current export has no embedded lights — fall back to a
                 // basic directional light so the model isn't unlit.
-                fallbackLight = new THREE.DirectionalLight(0xffffff, 5);
-                fallbackLight.position.set(5, 10, 7.5);
+                fallbackLight = new THREE.DirectionalLight(0xffffff, 1);
+                fallbackLight.position.set(8, 3, 2);
                 scene.add(fallbackLight);
             }
 
