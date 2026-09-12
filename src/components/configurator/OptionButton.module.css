@@ -1,11 +1,4 @@
 /* OptionButton.module.css */
-@font-face {
-  font-family: "ClashDisplay";
-  src: url(fonts/ClashDisplay-Variable.ttf);
-  font-style: normal;
-  font-weight: 400;
-}
-
 .container {
   display: flex;
   width: 318px;
@@ -16,10 +9,8 @@
 
 .label {
   color: #ffdbc6;
-  font-family: "ClashDisplay";
+  font-family: var(--clash-font);
   font-size: 20px;
-  font-style: normal;
-  font-weight: 400;
   line-height: normal;
 }
 
@@ -39,7 +30,7 @@
   gap: 8px;
 }
 
-/* Shared across ALL button types — same border everywhere */
+/* Shared across ALL button types - same border everywhere */
 .option {
   border: 1px solid #ffdbc6;
   cursor: pointer;
@@ -57,14 +48,12 @@
   border-radius: 999px;
   background: none;
   color: #ffdbc6;
-  font-family: "ClashDisplay";
+  font-family: var(--clash-font);
   font-size: 16px;
-  font-style: normal;
-  font-weight: 400;
   line-height: normal;
 }
 
-/* Swatch buttons — material/color, shown as background image or hex color */
+/* Swatch buttons - material/color, shown as background image or hex color */
 .swatch {
   border-radius: 12px;
   background-position: center;
@@ -84,10 +73,8 @@
 
 .optionValue {
   color: #ffdbc6;
-  font-family: "ClashDisplay";
+  font-family: var(--clash-font);
   font-size: 16px;
-  font-style: normal;
-  font-weight: 400;
   line-height: normal;
 }
 
@@ -111,6 +98,7 @@
 
 .disabledMessage {
   color: #ffdbc6;
+  font-family: var(--clash-font);
   font-size: 13px;
   opacity: 0.7;
   margin: 4px 0 0 0;

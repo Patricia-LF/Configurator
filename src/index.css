@@ -1,7 +1,15 @@
+@font-face {
+  font-family: "ClashDisplay";
+  src: url(fonts/ClashDisplay-Variable.ttf);
+  font-style: normal;
+  font-weight: 400;
+}
+
 :root {
-  --text: #2b150c;
-  --bg: #fff;
-  --border: #2b150c;
+  --text: #ffdbc6;
+  --bg: #16171d;
+  --border: #ffdbc6;
+  --clash-font: "ClashDisplay";
 
   --venylbase-bright: #fffbf8;
   --venylbase-dark: #211e1e;
@@ -11,18 +19,6 @@
   --venylbase-green: #52582a;
   --venylbase-red: #641717;
 
-  @font-face {
-    font-family: "ClashDisplay";
-    src: url(fonts/ClashDisplay-Variable.ttf);
-    font-style: normal;
-    font-weight: 400;
-  }
-
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -33,12 +29,10 @@
   } */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #ffdbc6;
-    --bg: #16171d;
-    --border: #ffdbc6;
-  }
+[data-theme="light"] {
+  --text: #2b150c;
+  --bg: #fff;
+  --border: #2b150c;
 }
 
 body {
@@ -59,9 +53,7 @@ body {
 h2,
 h3,
 p {
-  font-family: "ClashDisplay";
-  font-style: normal;
-  font-weight: 400;
+  font-family: var(--clash-font);
   color: var(--text);
 }
 
