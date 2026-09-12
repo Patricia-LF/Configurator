@@ -1,7 +1,14 @@
 /* ConfiguratorPanel.module.css */
+.fixedHeightList,
+.scrollList {
+  width: 450px;
+}
+
 .fixedHeightList {
   height: 100vh;
   overflow-y: hidden;
+  overflow-x: hidden;
+  padding: 0px 10px 0 10px;
   position: absolute;
   bottom: 0;
   right: 0;
@@ -10,11 +17,13 @@
   flex-direction: column;
   justify-content: flex-end;
   align-items: flex-end;
+  gap: 16px;
 }
 
 .scrollList {
   height: 100vh;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 0px 10px 0 10px;
   position: absolute;
   bottom: 0;
@@ -24,5 +33,11 @@
   flex-direction: column;
   /* justify-content: flex-end; */
   align-items: flex-end;
-  gap: 8px;
+  gap: 16px;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /*Older Edge/IE*/
+}
+
+.scrollList::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, newer Edge */
 }

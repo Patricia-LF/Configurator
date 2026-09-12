@@ -61,6 +61,14 @@ function ConfiguratorPanel() {
     }
   }, [currentStepIndex]);
 
+  // When switching to free-scroll mode, land at the bottom instead of jumping to the top
+  useEffect(() => {
+    if (isComplete && scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop =
+        scrollContainerRef.current.scrollHeight;
+    }
+  }, [isComplete]);
+
   const visiblePartKeys = partKeys.slice(0, currentStepIndex + 1);
 
   return (
