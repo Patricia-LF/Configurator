@@ -2,9 +2,16 @@ import { useState } from "react";
 import ReactPlayer from "react-player";
 import styles from "./MusicPlayer.module.css";
 import recordIcon from "../../assets/icons/vinyl.png";
-import pauseBtn from "../../assets/icons/pause-btn.png";
+import { useTheme } from "../../hooks/useTheme";
+
+// Icon names refer to the THEME they're shown in, not their own color —
+// "Light" icons are dark-colored (shown against light backgrounds), and vice versa
+import pauseBtn from "../../assets/icons/pause-btn.png"; // light-colored icon, used in dark mode
 import nextBtn from "../../assets/icons/next-btn.png";
 import playBtn from "../../assets/icons/play-btn.png";
+import pauseBtnLight from "../../assets/icons/pause-btn-light.png"; // dark-colored icon, used in light mode
+import nextBtnLight from "../../assets/icons/next-btn-light.png";
+import playBtnLight from "../../assets/icons/play-btn-light.png";
 
 // Example of an album with tracks - same albums as VinylCoverFlow in App.jsx
 const album = [
@@ -38,6 +45,7 @@ const album = [
 export default function MusicPlayer() {
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const { isDarkMode } = useTheme();
 
   // Function to switch to the next song
   const nextSong = () => {
@@ -64,13 +72,25 @@ export default function MusicPlayer() {
             className={styles.playing}
           >
             <img
-              src={isPlaying ? pauseBtn : playBtn}
+              src={
+                isPlaying
+                  ? isDarkMode
+                    ? pauseBtn
+                    : pauseBtnLight
+                  : isDarkMode
+                    ? playBtn
+                    : playBtnLight
+              }
               alt={isPlaying ? "Pause" : "Play"}
               className={isPlaying ? styles["pause-btn"] : styles["play-btn"]}
             />
           </button>
           <button onClick={nextSong} className={styles["next-btn"]}>
-            <img src={nextBtn} alt="Next" className={styles.next}></img>
+            <img
+              src={isDarkMode ? nextBtn : nextBtnLight}
+              alt="Next"
+              className={styles.next}
+            ></img>
           </button>
         </div>
 
