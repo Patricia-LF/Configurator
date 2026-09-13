@@ -1,6 +1,6 @@
 .optionCard {
   display: flex;
-  width: 432px;
+  width: 400px;
   padding: 32px 12px;
   flex-direction: column;
   align-items: center;
@@ -8,7 +8,7 @@
   align-self: stretch;
   border-radius: 32px;
   border: 1px solid var(--border);
-  background: rgba(43, 21, 12, 0.4);
+  background: var(--card-bg);
 }
 
 .cardInfo {
