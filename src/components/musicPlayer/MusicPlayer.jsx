@@ -46,7 +46,7 @@ const album = [
 export default function MusicPlayer({ start = false, disk = null }) {
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  // const { isDarkMode } = useTheme();
+  const { isDarkMode } = useTheme();
   const [stage, setStage] = useState("hidden");
 
   useEffect(() => {
