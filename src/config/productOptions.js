@@ -32,6 +32,7 @@ export const productOptions = {
   cabinet: {
     size: {
       label: "Cabinet Size",
+      default: "200cm",
       options: [
         { label: "118cm", value: "118cm" },
         { label: "200cm", value: "200cm" },
@@ -70,6 +71,7 @@ export const productOptions = {
   legs: {
     material: {
       label: "Leg Material",
+      default: "Silver",
       options: [], // actual options are computed dynamically via getLegMaterialOptions()
     },
   },
