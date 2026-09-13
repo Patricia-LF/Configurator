@@ -29,15 +29,38 @@ export const legMaterialBaseOptions = [
 ];
 
 export const productOptions = {
-  cabinet: {
-    size: {
-      label: "Cabinet Size",
-      default: "200cm",
+  size: {
+    length: {
+      label: "Length",
+      default: "118cm",
       options: [
         { label: "118cm", value: "118cm" },
         { label: "200cm", value: "200cm" },
       ],
     },
+  },
+
+  speaker: {
+    included: {
+      label: "Add",
+      default: "Yes",
+      options: [
+        { label: "No", value: "No" },
+        { label: "Yes", value: "Yes" },
+      ],
+    },
+
+    grille: {
+      label: "Speaker Grille",
+      default: "Dark",
+      options: [
+        { label: "Light", value: "Light" },
+        { label: "Dark", value: "Dark" },
+      ],
+    },
+  },
+
+  materials: {
     surface: {
       label: "Cabinet Surface",
       options: [
@@ -46,31 +69,12 @@ export const productOptions = {
       ],
     },
     woodVeneer: {
-      label: "Wood Veneer",
+      label: "Wood Type",
       options: woodVeneerOptions,
     },
-  },
 
-  speaker: {
-    included: {
-      label: "Built-in Speaker",
-      options: [
-        { label: "No", value: "No" },
-        { label: "Yes", value: "Yes" },
-      ],
-    },
-    grille: {
-      label: "Speaker Grille",
-      options: [
-        { label: "Light", value: "Light" },
-        { label: "Dark", value: "Dark" },
-      ],
-    },
-  },
-
-  legs: {
-    material: {
-      label: "Leg Material",
+    legs: {
+      label: "Legs",
       default: "Silver",
       options: [], // actual options are computed dynamically via getLegMaterialOptions()
     },
@@ -86,6 +90,14 @@ export const productOptions = {
         { label: "Orange", value: "Orange", background: "#CC4C15" },
         { label: "Green", value: "Green", background: "#52582A" },
         { label: "Red", value: "Red", background: "#641717" },
+      ],
+    },
+
+    basePlatter: {
+      label: "Base Platter",
+      options: [
+        { label: "Basic", value: "Basic" },
+        { label: "Acrylic", value: "Acrylic" },
       ],
     },
   },
