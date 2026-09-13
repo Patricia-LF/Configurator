@@ -14,7 +14,7 @@ export default function ToggleSwitch({
 
   return (
     <div className={styles.container}>
-      <p className={styles.themeText}>Dark/Light</p>
+      <p className={styles.themeText}>Light/Dark</p>
       {label && <div className={styles.label}>{label}</div>}
       <button
         className={`${styles.track} ${isDark ? styles.dark : styles.light}`}
