@@ -7,7 +7,7 @@
   gap: 8px;
   align-self: stretch;
   border-radius: 32px;
-  border: 1px solid #ffdbc6;
+  border: 1px solid var(--border);
   background: rgba(43, 21, 12, 0.4);
 }
 
@@ -29,7 +29,7 @@
 }
 
 .title {
-  color: #ffdbc6;
+  color: var(--text);
   font-family: var(--clash-font);
   font-size: 64px;
   text-transform: capitalize;

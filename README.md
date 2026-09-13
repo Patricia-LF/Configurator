@@ -52,43 +52,58 @@ npm run preview
 ```
 project-root/
 ├── public/
-│   └── models/
-│       └── mediaconsole.glb        # entire model, named groups inside (Body, Legs, Speaker, VinylPlayer)
+│   ├── album-images/                # album cover images used by VinylCoverflow
+│   ├── models/                      # .glb 3D model file(s) - named groups inside (Body, Legs, Speaker, VinylPlayer)
+│   └── textures/                    # material/wood swatch images used as button backgrounds
 │
 ├── src/
 │   ├── App.jsx
-│   ├── App.css
 │   ├── main.jsx
-│   ├── index.css
+│   ├── index.css                    # global styles, CSS theme variables (--text, --bg, --border, --card-bg, --clash-font)
 │   │
 │   ├── assets/
-│   │   └── icons/                  # small bundled assets (menu, player, and UI icons)
+│   │   └── icons/                   # small bundled assets (menu, player, toggle icons)
 │   │
-│   ├── canvas/                     # everything that lives inside <Canvas>
-│   │   ├── Scene.jsx               # lights, camera, environment
-│   │   └── ProductModel.jsx        # reads nodes.Body, nodes.Legs, nodes.Speaker, etc. from the glb file
+│   ├── canvas/
+│   │   ├── Scene.jsx                # raw three.js scene setup (camera, renderer, lights, OrbitControls)
+│   │   └── ProductModel.jsx         # loads the .glb, exposes loadProductModel/getLightColors/getCameraViews
 │   │
 │   ├── components/
 │   │   ├── configurator/
-│   │   │   ├── DropdownButton.jsx
-│   │   │   ├── DropdownButton.module.css
-│   │   │   ├── ColorButton.jsx
-│   │   │   └── SwitchButton.jsx
-│   │   └── music-player/
-│   │       ├── MusicPlayer.jsx
-│   │       └── MusicPlayer.module.css
+│   │   │   ├── ConfiguratorPanel.jsx        # step-by-step card flow, position: fixed, reads productOptions + selected state
+│   │   │   ├── ConfiguratorPanel.module.css
+│   │   │   ├── OptionCard.jsx               # wraps each configurable part in its own card
+│   │   │   ├── OptionCard.module.css
+│   │   │   ├── OptionButton.jsx             # renders either plain text pills or material/color swatches
+│   │   │   └── OptionButton.module.css
+│   │   │
+│   │   ├── musicPlayer/
+│   │   │   ├── MusicPlayer.jsx              # floating play/pause/switch player, position: fixed
+│   │   │   ├── MusicPlayer.module.css
+│   │   │   ├── VinylCoverflow.jsx           # scrollable album disk selector, position: fixed
+│   │   │   └── VinylCoverflow.module.css
+│   │   │
+│   │   └── theme/
+│   │       ├── ToggleSwitch.jsx             # dark/light mode slider toggle, position: fixed
+│   │       └── ToggleSwitch.module.css
 │   │
-│   ├── config/                     # configuration logic
-│   │   ├── productOptions.js       # defines what CAN be configured (options, materials)
-│   │   ├── ConfiguratorContext.jsx # Context + Provider holding the currently SELECTED state
-│   │   └── configuratorRules.js    # optional: dependencies/constraints between options
+│   ├── config/
+│   │   ├── productOptions.js         # defines available parameters/options per part (with backgrounds for swatches)
+│   │   ├── ConfiguratorContext.jsx   # Context + Provider holding the currently SELECTED configurator state
+│   │   ├── configuratorRules.js      # cross-part logic (leg material follows cabinet wood, speaker availability by size)
+│   │   └── ThemeContext.jsx          # Context + Provider holding isDarkMode + toggleTheme
 │   │
 │   └── hooks/
-│       └── useConfigurator.js      # convenience hook wrapping the Context
+│       ├── useConfigurator.js        # convenience hook wrapping ConfiguratorContext
+│       └── useTheme.js               # convenience hook wrapping ThemeContext
 │
 ├── index.html
+├── eslint.config.js
 ├── vite.config.js
-└── package.json
+├── package.json
+├── package-lock.json
+├── LICENSE
+└── .gitignore
 
 ```
 

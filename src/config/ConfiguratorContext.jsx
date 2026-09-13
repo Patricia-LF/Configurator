@@ -12,8 +12,9 @@ function getInitialState() {
   for (const part in productOptions) {
     initial[part] = {};
     for (const param in productOptions[part]) {
-      const firstOption = productOptions[part][param].options[0];
-      initial[part][param] = firstOption?.value ?? null;
+      const config = productOptions[part][param];
+      const defaultValue = config.default ?? config.options[0]?.value ?? null;
+      initial[part][param] = defaultValue;
     }
   }
 

@@ -24,7 +24,7 @@
 
 .buttons,
 .song-info {
-  color: #ffdbc6;
+  color: var(--text);
   font-family: var(--clash-font);
   font-size: 16px;
   line-height: normal;
