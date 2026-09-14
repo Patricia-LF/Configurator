@@ -37,7 +37,7 @@ function ConfiguratorPanel() {
 
     // Speaker params don't need to be touched if speaker isn't available at all
     const speakerUnavailable =
-      currentPart === "speaker" && !isSpeakerAvailable(selected.cabinet.size);
+      currentPart === "speaker" && !isSpeakerAvailable(selected.size.length);
 
     const requiredParamCount = speakerUnavailable ? 0 : paramKeys.length;
     const touchedCount = touchedParams[currentPart]?.size ?? 0;
@@ -49,7 +49,7 @@ function ConfiguratorPanel() {
         setIsComplete(true);
       }
     }
-  }, [touchedParams, currentStepIndex, selected.cabinet.size]);
+  }, [touchedParams, currentStepIndex, selected.size.length]);
 
   // Auto-scroll to the bottom so the newest card is visible, pushing older ones out of view above
   useEffect(() => {
@@ -82,14 +82,14 @@ function ConfiguratorPanel() {
             {Object.entries(productOptions[partKey]).map(
               ([paramKey, param]) => {
                 const isLegMaterial =
-                  partKey === "legs" && paramKey === "material";
+                  partKey === "materials" && paramKey === "legs";
                 const options = isLegMaterial
-                  ? getLegMaterialOptions(selected.cabinet.woodVeneer)
+                  ? getLegMaterialOptions(selected.materials.woodVeneer)
                   : param.options;
 
                 const isSpeakerParam = partKey === "speaker";
                 const speakerAvailable = isSpeakerAvailable(
-                  selected.cabinet.size,
+                  selected.size.length,
                 );
 
                 return (

@@ -81,13 +81,13 @@
 /* Active state for plain text buttons */
 .textOption.active {
   border: 1px dashed #ffdbc6;
-  background: rgba(255, 219, 198, 0.2);
+  background: var(--button-bg);
 }
 
 /* Active state for swatches: should NOT cover the background image/color */
 .swatch.active {
-  border: 1px dashed #ffdbc6;
-  box-shadow: 0 0 0 2px rgba(255, 219, 198, 0.5);
+  border: 1px dashed var(--border);
+  box-shadow: 0 0 10px 2px rgba(253, 192, 157, 0.795);
   opacity: 1;
 }
 
