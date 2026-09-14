@@ -4,6 +4,7 @@ import { useTheme } from "./hooks/useTheme";
 import ConfiguratorPanel from "./components/configurator/ConfiguratorPanel";
 import { useConfigurator } from "./hooks/useConfigurator";
 import AlbumSelector from "./components/musicPlayer/AlbumSelector";
+import TotalPrice from "./components/price/TotalPrice";
 
 function App() {
   const { selected, setOption } = useConfigurator();
@@ -18,6 +19,7 @@ function App() {
       />
       <AlbumSelector />
       <ConfiguratorPanel />
+      <TotalPrice />
     </div>
   );
 }
