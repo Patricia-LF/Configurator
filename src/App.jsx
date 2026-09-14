@@ -5,6 +5,7 @@ import ConfiguratorPanel from "./components/configurator/ConfiguratorPanel";
 import { useConfigurator } from "./hooks/useConfigurator";
 import AlbumSelector from "./components/musicPlayer/AlbumSelector";
 import TotalPrice from "./components/price/TotalPrice";
+import ZoomButton from "./components/zoom/ZoomButton";
 
 function App() {
   const { selected, setOption } = useConfigurator();
@@ -20,6 +21,20 @@ function App() {
       <AlbumSelector />
       <ConfiguratorPanel />
       <TotalPrice />
+      <ZoomButton
+        target="legs"
+        style={{ position: "absolute", bottom: "30%", left: "17%" }}
+      />
+      <ZoomButton
+        target="speaker"
+        style={{ position: "absolute", top: "43%", right: "37%" }}
+      />
+      <ZoomButton
+        target="texture"
+        style={{ position: "absolute", bottom: "35%", left: "37%" }}
+      />
+
+      <button className="proceed-btn">proceed</button>
     </div>
   );
 }
