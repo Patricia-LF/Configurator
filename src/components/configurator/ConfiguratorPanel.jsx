@@ -7,6 +7,7 @@ import {
   getLegMaterialOptions,
   isSpeakerAvailable,
   speakerUnavailableMessage,
+  isGrilleVisible,
 } from "../../config/configuratorRules";
 import styles from "./ConfiguratorPanel.module.css";
 
@@ -81,6 +82,16 @@ function ConfiguratorPanel() {
           <OptionCard key={partKey} title={partKey}>
             {Object.entries(productOptions[partKey]).map(
               ([paramKey, param]) => {
+                const isGrilleParam =
+                  partKey === "speaker" && paramKey === "grille";
+
+                const grilleVisible = isGrilleVisible(
+                  selected.speaker.included,
+                );
+
+                if (isGrilleParam && !grilleVisible) {
+                  return null;
+                }
                 const isLegMaterial =
                   partKey === "materials" && paramKey === "legs";
                 const options = isLegMaterial
