@@ -47,7 +47,9 @@
   opacity: 0;
   transform: translateX(-16px);
   pointer-events: none;
-  transition: opacity 400ms ease, transform 400ms ease;
+  transition:
+    opacity 400ms ease,
+    transform 400ms ease;
 }
 
 .player--visible {
@@ -76,6 +78,7 @@
   width: 39.017px;
   height: 39.017px;
   aspect-ratio: 1/1;
+  cursor: pointer;
 }
 
 .playing,
