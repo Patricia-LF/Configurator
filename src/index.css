@@ -69,7 +69,7 @@ p {
   gap: 24px;
 }
 
-.proceed-btn {
+.checkout-btn {
   padding: 8px 16px;
   min-width: 150px;
   white-space: nowrap;
@@ -87,6 +87,6 @@ p {
   cursor: pointer;
 }
 
-.proceed-btn:hover {
+.checkout-btn:hover {
   background: var(--card-bg);
 }
