@@ -68,7 +68,6 @@
   gap: 8px;
   align-self: stretch;
   border-radius: 999px;
-  opacity: 0.6;
 }
 
 .optionValue {
@@ -80,17 +79,17 @@
 
 /* Active state for plain text buttons */
 .textOption.active {
-  border: 1px solid var(--border);
+  border: 3px solid var(--border);
   background: var(--button-bg);
-  outline: 0.5px solid var(--border);
+  outline: 1px solid var(--border);
   outline-offset: 2px;
 }
 
 /* Active state for swatches: should NOT cover the background image/color */
 .swatch.active {
-  border: 1px solid var(--border);
+  border: 3px solid var(--border);
   opacity: 1;
-  outline: 0.5px solid var(--border);
+  outline: 1px solid var(--border);
   outline-offset: 2px;
 }
 
