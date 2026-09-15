@@ -38,6 +38,96 @@ function getZoomAnchorPosition(target, mesh) {
   return center;
 }
 
+// "CameraAction" is baked at 24fps over 348 frames: default view -> close-up
+// turntable framing -> back to default -> a third framing. The turntable
+// step uses just frames 20-150 (default in to the close-up, held there) —
+// played forward to arrive, and played backward (AnimationAction.timeScale
+// = -1) to leave, so the "outro" is guaranteed to retrace the exact same
+// path back to the exact same starting pose.
+const CAMERA_ACTION_FPS = 24;
+const TURNTABLE_CLIP_FRAME_RANGE = [35, 105];
+// Nudges the baked close-up framing (0.3, 1.23, 0.93) further left along
+// world X. Negative = left. Applied to the clip's position track, ramped
+// so it still starts from the true, unshifted default view.
+const TURNTABLE_CAMERA_OFFSET = new THREE.Vector3(-0.3, 0, 0);
+
+// Shifts a clip's position track by `offset`, weighted per-keyframe by
+// `weightForProgress(progress)`, where `progress` is how far that keyframe
+// already is along the clip's baked start->end path (0 at the first
+// keyframe, 1 once the camera reaches/holds on its final framing).
+function offsetPositionTrack(clip, offset, weightForProgress) {
+  const track = clip.tracks.find((t) => t.name.endsWith('.position'));
+  if (!track) return;
+
+  const { values } = track;
+  const count = values.length / 3;
+  if (count === 0) return;
+
+  const start = new THREE.Vector3().fromArray(values, 0);
+  const end = new THREE.Vector3().fromArray(values, (count - 1) * 3);
+  const path = end.clone().sub(start);
+  const pathLengthSq = path.lengthSq();
+
+  const current = new THREE.Vector3();
+  for (let i = 0; i < count; i++) {
+    const idx = i * 3;
+    current.fromArray(values, idx);
+
+    const progress = pathLengthSq === 0
+      ? 0
+      : THREE.MathUtils.clamp(current.sub(start).dot(path) / pathLengthSq, 0, 1);
+    const weight = weightForProgress(progress);
+
+    values[idx] += offset.x * weight;
+    values[idx + 1] += offset.y * weight;
+    values[idx + 2] += offset.z * weight;
+  }
+}
+
+// Blends a clip's position+quaternion tracks toward an absolute pose,
+// weighted per-keyframe by `weightForProgress(progress)` (see
+// `offsetPositionTrack` above for how `progress` is derived) — weight 0
+// keeps the original baked value, weight 1 fully replaces it with
+// `targetPosition`/`targetQuaternion`.
+function blendTrackTowardPose(clip, targetPosition, targetQuaternion, weightForProgress) {
+  const posTrack = clip.tracks.find((t) => t.name.endsWith('.position'));
+  if (!posTrack) return;
+  const rotTrack = clip.tracks.find((t) => t.name.endsWith('.quaternion'));
+
+  const posValues = posTrack.values;
+  const count = posValues.length / 3;
+  if (count === 0) return;
+
+  const start = new THREE.Vector3().fromArray(posValues, 0);
+  const end = new THREE.Vector3().fromArray(posValues, (count - 1) * 3);
+  const path = end.clone().sub(start);
+  const pathLengthSq = path.lengthSq();
+
+  const current = new THREE.Vector3();
+  const blendedPos = new THREE.Vector3();
+  const bakedQuat = new THREE.Quaternion();
+
+  for (let i = 0; i < count; i++) {
+    const idx = i * 3;
+    current.fromArray(posValues, idx);
+
+    const progress = pathLengthSq === 0
+      ? 0
+      : THREE.MathUtils.clamp(current.clone().sub(start).dot(path) / pathLengthSq, 0, 1);
+    const weight = weightForProgress(progress);
+
+    blendedPos.copy(current).lerp(targetPosition, weight);
+    blendedPos.toArray(posValues, idx);
+
+    if (rotTrack) {
+      const rIdx = i * 4;
+      bakedQuat.fromArray(rotTrack.values, rIdx);
+      bakedQuat.slerp(targetQuaternion, weight);
+      bakedQuat.toArray(rotTrack.values, rIdx);
+    }
+  }
+}
+
 /**
  * Main product scene: loads the configurable product model, applies
  * ConfiguratorContext's `selected` state onto its materials/visibility, and
@@ -64,6 +154,21 @@ export default function Scene() {
   const cameraTweenRef = useRef(null);
 
   const { selected } = useConfigurator();
+  // The sub-clip trimmed out of "CameraAction" for the turntable step (see
+  // TURNTABLE_CLIP_FRAME_RANGE above) — played forward for the intro and
+  // backward for the outro.
+  const cinematicTurntableClipRef = useRef(null);
+  // True while the render loop should show the cinematic camera's pose
+  // instead of OrbitControls' — during the fly-through itself, and then
+  // still parked on the close-up afterward until the user's first drag.
+  const cameraLockedRef = useRef(false);
+  // The orbit-controlled render camera/controls, stashed so the
+  // turntable-fly-through effect below (a separate effect from the one that
+  // creates them) can reach them.
+  const cameraRef = useRef(null);
+  const controlsRef = useRef(null);
+  const prevActivePartRef = useRef(null);
+  const { selected, activePart } = useConfigurator();
   const { isDarkMode } = useTheme();
 
   const modelSelection = {
@@ -136,6 +241,7 @@ export default function Scene() {
     camera.setFocalLength(50);
     camera.updateProjectionMatrix();
     camera.position.set(0, 0.8, 4);
+    cameraRef.current = camera;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(mount.clientWidth, mount.clientHeight);
@@ -271,10 +377,71 @@ export default function Scene() {
         console.error("[Scene]", error);
       });
 
+      if (cameras.length > 0) {
+        // Use the first exported camera's framing as the starting view.
+        camera.position.copy(cameras[0].position);
+        camera.quaternion.copy(cameras[0].quaternion);
+        // Baked camera has no orbit target — without this, orbiting pivots
+        // around the origin instead of the product.
+        if (!productBounds.isEmpty()) {
+          controls.target.copy(productBounds.getCenter(new THREE.Vector3()));
+          controls.update();
+        }
+      } else {
+        // No baked camera — frame on the product's bounding box instead.
+        if (!productBounds.isEmpty()) {
+          const center = productBounds.getCenter(new THREE.Vector3());
+          const boxSize = productBounds.getSize(new THREE.Vector3());
+          const maxDim = Math.max(boxSize.x, boxSize.y, boxSize.z);
+          const fitDistance = (maxDim / 2) / Math.tan((camera.fov * Math.PI) / 360);
+
+          camera.near = fitDistance / 100;
+          camera.far = fitDistance * 100;
+          camera.position.set(center.x, center.y, center.z + fitDistance * 1.4);
+          camera.updateProjectionMatrix();
+
+          controls.target.copy(center);
+          controls.update();
+        }
+      }
+
+      // Now that the actual on-load view is settled (the GLB's own baked
+      // camera framing — note controls.min/maxPolarAngle and
+      // min/maxAzimuthAngle below can still clamp it if the artist's angle
+      // falls outside those limits), build the turntable sub-clip so it
+      // blends from that exact pose — otherwise the fly-through would jump
+      // from the on-load view to the raw baked default the instant it
+      // starts. Playing it backward for the outro (see the turntable
+      // effect below) then guarantees an identical return trip.
+      if (cinematicMixerRef.current) {
+        const reloadPosition = camera.position.clone();
+        const reloadQuaternion = camera.quaternion.clone();
+
+        const [clipStart, clipEnd] = TURNTABLE_CLIP_FRAME_RANGE;
+        cinematicTurntableClipRef.current = THREE.AnimationUtils.subclip(
+          animations[0],
+          'CameraTurntableIntro',
+          clipStart,
+          clipEnd,
+          CAMERA_ACTION_FPS
+        );
+        // Ramp 1 -> 0: starts exactly on the on-load view, fading out by
+        // the time it reaches the close-up (whose baked framing we keep).
+        blendTrackTowardPose(cinematicTurntableClipRef.current, reloadPosition, reloadQuaternion, (p) => 1 - p);
+        // Ramp 0 -> 1: shifts the close-up itself further left.
+        offsetPositionTrack(cinematicTurntableClipRef.current, TURNTABLE_CAMERA_OFFSET, (p) => p);
+      }
+    }).catch((error) => {
+      console.error('[Scene]', error);
+    });
+
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.25;
     controls.enableZoom = true;
+    // Two-finger trackpad drag (and right-click-drag) would otherwise pan
+    // the camera/target off the product — only orbiting is wanted here.
+    controls.enablePan = false;
     // Keeps the camera off the floor/backdrop rear; tuned to the ~4-unit default distance.
     controls.minDistance = 2.5;
     controls.maxDistance = 5.5;
@@ -282,6 +449,7 @@ export default function Scene() {
     controls.maxPolarAngle = Math.PI / 2 - 0.05;
     controls.minAzimuthAngle = -Math.PI / 12;
     controls.maxAzimuthAngle = Math.PI / 12;
+    controlsRef.current = controls;
 
     const timer = new THREE.Timer();
     let frameId;
@@ -349,6 +517,18 @@ export default function Scene() {
           y,
           visible: anchorPosition.z >= -1 && anchorPosition.z <= 1,
         };
+      cinematicMixerRef.current?.update(timer.getDelta());
+
+      if (cameraLockedRef.current) {
+        // A cinematic clip (see the turntable fly-through effect) is
+        // driving the baked-in GLB camera, or it just finished and we're
+        // holding on its final frame until the user drags — mirror its
+        // pose onto the render camera instead of letting OrbitControls
+        // fight it.
+        camera.position.copy(cinematicCameraRef.current.position);
+        camera.quaternion.copy(cinematicCameraRef.current.quaternion);
+      } else {
+        controls.update();
       }
 
       renderer.render(scene, camera);
@@ -373,6 +553,57 @@ export default function Scene() {
       mount.removeChild(renderer.domElement);
     };
   }, []);
+
+  // Plays the trimmed turntable sub-clip forward the moment the user
+  // reaches the turntable step, and backward (retracing the exact same
+  // path back to the exact same starting pose) the moment they touch an
+  // option in any other card afterward — ConfiguratorPanel's
+  // `setActivePart` fires on every option change, not just step advances.
+  useEffect(() => {
+    const prevActivePart = prevActivePartRef.current;
+    prevActivePartRef.current = activePart;
+
+    const mixer = cinematicMixerRef.current;
+    const controls = controlsRef.current;
+    const clip = cinematicTurntableClipRef.current;
+    if (!mixer || !controls || !cinematicCameraRef.current || !clip) return;
+
+    const enteringTurntable = activePart === 'turntable' && prevActivePart !== 'turntable';
+    const leavingTurntable = prevActivePart === 'turntable' && activePart !== 'turntable';
+    if (!enteringTurntable && !leavingTurntable) return;
+
+    // Pointer input is ignored outright while a clip is playing.
+    controls.enabled = false;
+    cameraLockedRef.current = true;
+
+    const action = mixer.clipAction(clip);
+    action.reset();
+    action.setLoop(THREE.LoopOnce, 1);
+    action.clampWhenFinished = true;
+    action.timeScale = enteringTurntable ? 1 : -1;
+    action.time = enteringTurntable ? 0 : clip.duration;
+    action.play();
+
+    const handleFinished = (event) => {
+      if (event.action !== action) return;
+      mixer.removeEventListener('finished', handleFinished);
+      controls.enabled = true;
+
+      if (enteringTurntable) {
+        // Stay parked on the close-up (cameraLockedRef stays true) until
+        // the user's first drag actually begins.
+        const handleDragStart = () => {
+          cameraLockedRef.current = false;
+          controls.removeEventListener('start', handleDragStart);
+        };
+        controls.addEventListener('start', handleDragStart);
+      } else {
+        // Back at the on-load view — no reason to keep it locked.
+        cameraLockedRef.current = false;
+      }
+    };
+    mixer.addEventListener('finished', handleFinished);
+  }, [activePart]);
 
   return (
     <div style={{ position: "relative", width: "100%", height: "100vh" }}>
