@@ -37,6 +37,12 @@ export const legMaterialBaseOptions = [
   },
 ];
 
+// Parts that always use one material regardless of the configurator
+// selection — the export ships them material-less otherwise.
+export const FIXED_MATERIAL_BY_MESH = {
+  Recordplayer_Cover: 'Recordplayer_Cover_Glass',
+};
+
 export const productOptions = {
   size: {
     length: {

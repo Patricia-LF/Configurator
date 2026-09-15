@@ -4,7 +4,7 @@ import "./index.css";
 import App from "./App.jsx";
 import { ConfiguratorProvider } from "./config/ConfiguratorContext";
 import { ThemeProvider } from "./config/ThemeContext";
-import { ZoomProvider } from "./config/ZoomContext.jsx";
+import { ZoomProvider } from "./config/ZoomContext";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>

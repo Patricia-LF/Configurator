@@ -2,13 +2,11 @@ import Scene from "./canvas/Scene";
 import ToggleSwitch from "./components/theme/ToggleSwitch";
 import { useTheme } from "./hooks/useTheme";
 import ConfiguratorPanel from "./components/configurator/ConfiguratorPanel";
-import { useConfigurator } from "./hooks/useConfigurator";
 import AlbumSelector from "./components/musicPlayer/AlbumSelector";
 import TotalPrice from "./components/price/TotalPrice";
 import ZoomButton from "./components/zoom/ZoomButton";
 
 function App() {
-  const { selected, setOption } = useConfigurator();
   const { isDarkMode, toggleTheme } = useTheme();
 
   return (
@@ -16,11 +14,10 @@ function App() {
       <Scene />
       <ToggleSwitch
         value={isDarkMode ? "Dark" : "Light"}
-        onChange={(newValue) => toggleTheme()}
+        onChange={toggleTheme}
       />
       <AlbumSelector />
       <ConfiguratorPanel />
-      <TotalPrice />
       <ZoomButton
         target="legs"
         style={{ position: "absolute", bottom: "30%", left: "17%" }}
@@ -34,7 +31,10 @@ function App() {
         style={{ position: "absolute", bottom: "35%", left: "37%" }}
       />
 
-      <button className="checkout-btn">Checkout</button>
+      <div className="bottom-bar">
+        <TotalPrice />
+        <button className="checkout-btn">Checkout</button>
+      </div>
     </div>
   );
 }

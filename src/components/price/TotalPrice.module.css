@@ -1,8 +1,5 @@
 .container {
-  position: absolute;
-  z-index: 10;
-  bottom: 20px;
-  right: 620px;
+  position: relative;
   font-size: 24px;
   font-family: var(--clash-font);
   color: var(--text);
