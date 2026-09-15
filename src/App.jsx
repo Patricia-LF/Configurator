@@ -18,7 +18,6 @@ function App() {
       />
       <AlbumSelector />
       <ConfiguratorPanel />
-      <TotalPrice />
       <ZoomButton
         target="legs"
         style={{ position: "absolute", bottom: "30%", left: "17%" }}
@@ -32,7 +31,10 @@ function App() {
         style={{ position: "absolute", bottom: "35%", left: "37%" }}
       />
 
-      <button className="proceed-btn">proceed</button>
+      <div className="bottom-bar">
+        <TotalPrice />
+        <button className="proceed-btn">proceed</button>
+      </div>
     </div>
   );
 }

@@ -55,11 +55,17 @@ p {
   color: var(--text);
 }
 
-.proceed-btn {
+.bottom-bar {
   position: absolute;
   z-index: 10;
   bottom: 20px;
   right: 450px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.proceed-btn {
   padding: 8px 16px;
   min-width: 150px;
   white-space: nowrap;
