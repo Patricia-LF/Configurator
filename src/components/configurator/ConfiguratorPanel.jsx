@@ -12,7 +12,7 @@ import {
 import styles from "./ConfiguratorPanel.module.css";
 
 function ConfiguratorPanel() {
-  const { selected, setOption } = useConfigurator();
+  const { selected, setOption, setActivePart } = useConfigurator();
   const partKeys = Object.keys(productOptions);
 
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
@@ -21,8 +21,18 @@ function ConfiguratorPanel() {
 
   const scrollContainerRef = useRef(null);
 
+  // Lets other parts of the app (e.g. Scene's cinematic camera) react to the
+  // user reaching a given step, such as "turntable".
+  useEffect(() => {
+    setActivePart(partKeys[currentStepIndex]);
+  }, [currentStepIndex]);
+
   function handleOptionChange(partKey, paramKey, value) {
     setOption(partKey, paramKey, value);
+    // Also fires for cards other than the current step, e.g. re-editing an
+    // earlier card once every step is visible — Scene's cinematic camera
+    // uses this to notice the user has moved on from the turntable card.
+    setActivePart(partKey);
 
     setTouchedParams((prev) => {
       const updated = new Set(prev[partKey] ?? []);
