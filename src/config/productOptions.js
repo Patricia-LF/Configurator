@@ -117,14 +117,4 @@ export const productOptions = {
       ],
     },
   },
-
-  scene: {
-    background: {
-      label: "Backdrop",
-      options: [
-        { label: "Light", value: "White" },
-        { label: "Dark", value: "Orange" },
-      ],
-    },
-  },
 };

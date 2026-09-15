@@ -14,29 +14,34 @@ import {
 } from './ProductModel';
 import { collectMaterialsByName } from './materialLibrary';
 import { useConfigurator } from '../hooks/useConfigurator';
+import { useTheme } from '../hooks/useTheme';
 
 const hdriUrl = '/models/studio.hdr';
 
 /**
  * Main product scene: loads the configurable product model, applies
  * ConfiguratorContext's `selected` state onto its materials/visibility, and
- * renders it with an orbit-controlled camera.
+ * renders it with an orbit-controlled camera. The backdrop follows the
+ * app-wide Light/Dark theme toggle rather than its own configurator option.
  */
 export default function Scene() {
   const mountRef = useRef(null);
   const modelRef = useRef(null);
   const materialsByNameRef = useRef(null);
   const { selected } = useConfigurator();
+  const { isDarkMode } = useTheme();
+
+  const modelSelection = { ...selected, scene: { background: isDarkMode ? 'Orange' : 'White' } };
 
   // Kept in a ref so this effect can stay `[]` while still reading the
   // latest selection once the model finishes loading.
-  const selectedRef = useRef(selected);
+  const selectedRef = useRef(modelSelection);
   useEffect(() => {
-    selectedRef.current = selected;
+    selectedRef.current = modelSelection;
     if (modelRef.current && materialsByNameRef.current) {
-      applyConfiguratorSelection(modelRef.current, selected, materialsByNameRef.current);
+      applyConfiguratorSelection(modelRef.current, modelSelection, materialsByNameRef.current);
     }
-  }, [selected]);
+  }, [selected, isDarkMode]);
 
   useEffect(() => {
     const mount = mountRef.current;
