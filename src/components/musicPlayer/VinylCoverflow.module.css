@@ -1,3 +1,6 @@
+/* VinylCoverflow.css */
+/* Positioned by its parent (see .scene-stage in App.css) as an overlay
+   on top of the Scene canvas, anchored to the bottom-left corner. */
 .coverflow {
   position: absolute;
   bottom: -5px;
@@ -50,3 +53,4 @@
   border-radius: 4px;
   transition: background 450ms ease;
 }
+

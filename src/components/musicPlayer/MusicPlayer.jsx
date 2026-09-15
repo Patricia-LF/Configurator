@@ -43,14 +43,18 @@ const album = [
 ];
 
 // stage moves forward once: hidden -> risen (sliding up) -> done (buttons shown)
-export default function MusicPlayer({ start = false, disk = null }) {
+// and resets straight back to hidden when the player is dismissed
+export default function MusicPlayer({ start = false, disk = null, onBack }) {
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const { isDarkMode } = useTheme();
   const [stage, setStage] = useState("hidden");
 
   useEffect(() => {
-    if (!start) return;
+    if (!start) {
+      setStage("hidden");
+      return;
+    }
     const frame = requestAnimationFrame(() => setStage("risen"));
     return () => cancelAnimationFrame(frame);
   }, [start]);
@@ -110,7 +114,7 @@ export default function MusicPlayer({ start = false, disk = null }) {
               className={isPlaying ? styles["pause-btn"] : styles["play-btn"]}
             />
           </button>
-          <button onClick={nextSong} className={styles["next-btn"]}>
+          <button onClick={onBack} className={styles["next-btn"]}>
             <img
               src={isDarkMode ? nextBtn : nextBtnLight}
               alt="Next"
