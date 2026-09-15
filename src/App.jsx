@@ -34,7 +34,7 @@ function App() {
         style={{ position: "absolute", bottom: "35%", left: "37%" }}
       />
 
-      <button className="proceed-btn">Checkout</button>
+      <button className="checkout-btn">Checkout</button>
     </div>
   );
 }

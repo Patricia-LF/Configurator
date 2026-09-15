@@ -55,7 +55,7 @@ p {
   color: var(--text);
 }
 
-.proceed-btn {
+.checkout-btn {
   position: absolute;
   z-index: 10;
   bottom: 20px;
@@ -77,6 +77,6 @@ p {
   cursor: pointer;
 }
 
-.proceed-btn:hover {
+.checkout-btn:hover {
   background: var(--card-bg);
 }
