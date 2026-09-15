@@ -49,6 +49,17 @@ export default function AlbumSelector() {
     setShowCoverflow(false); // unmount only once its own transition is done
   };
 
+  const handleBack = () => {
+    setPlayerStart(false); // record and buttons slide back down
+
+    // remount the coverflow (still marked "exiting" so it starts off-screen),
+    // then flip it a beat later so it slides back up, crossing the record
+    setTimeout(() => {
+      setShowCoverflow(true);
+      requestAnimationFrame(() => setExiting(false));
+    }, 80);
+  };
+
   return (
     <>
       {showCoverflow && (
@@ -59,7 +70,7 @@ export default function AlbumSelector() {
           onExited={handleCoverflowExited}
         />
       )}
-      <MusicPlayer start={playerStart} disk={selectedDisk} />
+      <MusicPlayer start={playerStart} disk={selectedDisk} onBack={handleBack} />
     </>
   );
 }
