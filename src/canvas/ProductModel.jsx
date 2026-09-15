@@ -1,97 +1,156 @@
+import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { getMeshVisibility } from '../config/configuratorRules';
+import { getTestModelState } from '../config/configuratorRules';
+import { FIXED_MATERIAL_BY_MESH } from '../config/productOptions';
 
-// Files in public/ are served as-is at the site root — reference them by
-// URL, don't import them as modules (Vite will try to parse them as JS).
-// This is the variant model — it has the named per-option meshes
-// (Console_*, Cabinet_*/Canbinet_*, Legs_*, Speaker*) that configuratorRules
-// maps productOptions selections onto. 3DTOWEBB_PREVIEW_2_OPTIMIZED.glb is a
-// lighter scene-only export with no per-option geometry.
-const modelUrl = '/models/3D_TO_WEB_PREVIEW_3.glb';
+export const productModelUrl = '/models/3DTOWEBB_PEVIEW_6.glb';
 
 /**
- * Loads the product GLB and pulls out everything embedded in the file:
- * the mesh hierarchy, any KHR_lights_punctual lights, and any exported
- * cameras.
+ * Loads the product GLB: the mesh hierarchy, any KHR_lights_punctual
+ * lights, and any exported cameras.
  *
- * GLTFLoader turns embedded lights into real THREE.Light instances that sit
- * in `model`'s node hierarchy, and embedded cameras into `gltf.cameras`. Both
- * come back as empty arrays if the source .glb was exported without them —
- * check the Blender glTF export panel's "Cameras" / "Punctual Lights"
- * checkboxes if you expect entries here and get none.
- *
- * @param {string} [url] - defaults to the bundled product model
+ * @param {string} [url]
  * @returns {Promise<{ gltf: import('three/addons/loaders/GLTFLoader.js').GLTF, model: THREE.Group, lights: THREE.Light[], cameras: THREE.Camera[] }>}
  */
-export function loadProductModel(url = modelUrl) {
-    const loader = new GLTFLoader();
+export function loadProductModel(url = productModelUrl) {
+  const loader = new GLTFLoader();
 
-    return new Promise((resolve, reject) => {
-        loader.load(
-            url,
-            (gltf) => {
-                const model = gltf.scene;
-                const lights = [];
+  return new Promise((resolve, reject) => {
+    loader.load(
+      url,
+      (gltf) => {
+        const model = gltf.scene;
+        const lights = [];
 
-                model.traverse((child) => {
-                    if (child.isMesh) {
-                        child.castShadow = true;
-                        child.receiveShadow = true;
-                    }
+        model.traverse((child) => {
+          if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+          }
 
-                    if (child.isLight) {
-                        lights.push(child);
-                    }
-                });
+          if (child.isLight) {
+            lights.push(child);
+          }
+        });
 
-                const cameras = gltf.cameras ?? [];
+        const cameras = gltf.cameras ?? [];
 
-                if (lights.length === 0) {
-                    console.warn(`[ProductModel] "${url}" has no lights (KHR_lights_punctual) baked in.`);
-                }
-                if (cameras.length === 0) {
-                    console.warn(`[ProductModel] "${url}" has no cameras baked in.`);
-                }
+        if (lights.length === 0) {
+          console.warn(`[ProductModel] "${url}" has no lights (KHR_lights_punctual) baked in.`);
+        }
+        if (cameras.length === 0) {
+          console.warn(`[ProductModel] "${url}" has no cameras baked in.`);
+        }
 
-                resolve({ gltf, model, lights, cameras });
-            },
-            undefined,
-            reject
-        );
-    });
+        resolve({ gltf, model, lights, cameras });
+      },
+      undefined,
+      reject
+    );
+  });
 }
 
-/** Convenience summary of each embedded light's color/intensity, e.g. for a debug panel. */
+// Convenience summary of each embedded light, e.g. for a "switch lighting" control.
 export function getLightColors(lights) {
-    return lights.map((light) => ({
-        name: light.name,
-        type: light.type, // 'PointLight' | 'SpotLight' | 'DirectionalLight'
-        color: light.color.clone(),
-        intensity: light.intensity,
-    }));
+  return lights.map((light) => ({
+    name: light.name,
+    type: light.type, 
+    color: light.color.clone(),
+    intensity: light.intensity,
+  }));
 }
 
-/** Convenience summary of each embedded camera, e.g. for a "switch view" control. */
+// Convenience summary of each embedded camera, e.g. for a "switch view" control.
 export function getCameraViews(cameras) {
-    return cameras.map((camera) => ({
-        name: camera.name,
-        type: camera.isPerspectiveCamera ? 'perspective' : 'orthographic',
-        position: camera.position.clone(),
-        quaternion: camera.quaternion.clone(),
-    }));
+  return cameras.map((camera) => ({
+    name: camera.name,
+    type: camera.isPerspectiveCamera ? 'perspective' : 'orthographic',
+    position: camera.position.clone(),
+    quaternion: camera.quaternion.clone(),
+  }));
 }
 
-/**
- * Shows/hides the model's per-option meshes to match ConfiguratorContext's
- * `selected` state, per the mapping in configuratorRules.getMeshVisibility.
- * Safe to call repeatedly on the same `model` as selections change.
- */
-export function applyProductSelection(model, selected) {
-    const isVisible = getMeshVisibility(selected);
+// Prefix of the material-swatch nodes in the model. 
+// These are not part of the visible product, but they carry the real materials 
+// into the glTF's materials array so they can be fetched and reassigned onto the real product parts.
+const MATERIAL_SWATCH_PREFIX = 'Sample_Cube_';
+
+// Node-name prefixes the selection logic below manages. 'Speaker' has no
+// trailing underscore — it's a single shape shared by both grille colors.
+const MANAGED_PREFIXES = ['Console_', 'Legs_', 'Cabinet_', 'NS_', 'Speaker', 'Scene_'];
+
+function isManagedMeshName(name) {
+  return MANAGED_PREFIXES.some((prefix) => name.startsWith(prefix));
+}
+
+// Run once right after the model loads: enables shadows on every mesh and
+// hides the material-swatch nodes (they're not part of the visible product).
+export function prepareProductModel(model) {
+  model.traverse((child) => {
+    if (!child.isMesh) return;
+
+    child.castShadow = true;
+    child.receiveShadow = true;
+
+    if (child.name.startsWith(MATERIAL_SWATCH_PREFIX)) {
+      child.visible = false;
+    }
+  });
+}
+
+// Assigns each FIXED_MATERIAL_BY_MESH part its material. Run once after load.
+export function applyFixedMaterials(model, materialsByName) {
+  Object.entries(FIXED_MATERIAL_BY_MESH).forEach(([meshName, materialName]) => {
+    if (!materialsByName.has(materialName)) {
+      console.warn(`[ProductModel] material "${materialName}" not found for mesh "${meshName}"`);
+      return;
+    }
 
     model.traverse((child) => {
-        if (child.isMesh) {
-            child.visible = isVisible(child.name);
-        }
+      if (child.isMesh && child.name === meshName) {
+        child.material = materialsByName.get(materialName);
+      }
     });
+  });
+}
+
+// Updates the model's mesh visibility and material assignments based on the
+// current configurator selection. This is the "apply a selection to the model"
+export function applyConfiguratorSelection(model, selected, materialsByName) {
+  const { visibleMeshNames, materialByMesh } = getTestModelState(selected);
+
+  model.traverse((child) => {
+    if (!child.isMesh || !isManagedMeshName(child.name)) return;
+
+    child.visible = visibleMeshNames.has(child.name);
+
+    const materialName = materialByMesh[child.name];
+    if (!materialName) return;
+
+    if (materialsByName.has(materialName)) {
+      child.material = materialsByName.get(materialName);
+    } else {
+      console.warn(`[ProductModel] material "${materialName}" not found for mesh "${child.name}"`);
+    }
+  });
+}
+
+// Returns the bounding box of all visible meshes in the model, ignoring
+// hidden meshes and the material-swatch nodes. Useful for framing the camera
+// on the product.
+export function getProductBounds(model) {
+  const bounds = new THREE.Box3();
+
+  model.traverse((child) => {
+    if (
+      child.isMesh &&
+      child.visible &&
+      !child.name.startsWith('Scene_') &&
+      !child.name.startsWith(MATERIAL_SWATCH_PREFIX)
+    ) {
+      bounds.expandByObject(child);
+    }
+  });
+
+  return bounds;
 }

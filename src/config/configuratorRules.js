@@ -1,5 +1,9 @@
 import { legMaterialBaseOptions, woodVeneerOptions } from "./productOptions";
 
+// Maps ConfiguratorContext's `selected` state onto the product model's mesh
+// names, which carry no material of their own — so this computes both a
+// visibility set and a mesh->material map.
+
 // Leg material options depend on which wood veneer was chosen for the cabinet
 export function getLegMaterialOptions(selectedCabinetWood) {
   if (!selectedCabinetWood) return legMaterialBaseOptions;
@@ -16,79 +20,60 @@ export function getLegMaterialOptions(selectedCabinetWood) {
     { label: selectedCabinetWood, value: selectedCabinetWood },
   ];
 }
-// Maps ConfiguratorContext's `selected` state to which named meshes in the
-// product GLB (3D_TO_WEB_PREVIEW_4_LIGHT_TEXT_JPG_FIX.glb) should be visible.
-//
-// NS_Smooth_*/NS_Textured_* ("NS" = No Speaker) are the blank door inserts
-// shown when speaker.included is "Cabinet Doors", following surface/veneer
-// like the regular cabinet door meshes.
-
-const CABINET_SIZE_TOKEN = {
-  "118cm": "Small",
-  "200cm": "Large",
-};
-
-const CABINET_SURFACE_PREFIX = {
-  Smooth: "Cabinet_Smooth",
-  Textured: "Cabinet_Textured",
-};
-
-const NS_SURFACE_PREFIX = {
-  Smooth: "NS_Smooth",
-  Textured: "NS_Textured",
-};
-
-const SPEAKER_GRILLE_NAME = {
-  Light: "Speaker_Light",
-  Dark: "Speaker_Dark",
-};
-
-// Node name prefixes this module manages the visibility of. Anything not
-// matching one of these (Back_Wall, Floor, Light_Bounce_Plane,
-// Recordplayer_Cover, ...) is static scenery and stays at its default
-// visibility.
-const MANAGED_PREFIXES = ["Console_", "Cabinet_", "Legs_", "Speaker_", "NS_", "Scene_"];
-
-export function isManagedMeshName(name) {
-  return MANAGED_PREFIXES.some((prefix) => name.startsWith(prefix));
-}
 
 // The small (118cm) cabinet has no room for a built-in speaker.
 export function isSpeakerAllowed(selected) {
   return selected.cabinet.size !== "118cm";
 }
 
+const CABINET_SIZE_TOKEN = {
+  "118cm": "Small",
+  "200cm": "Large",
+};
+
+const LEG_MATERIAL_NAME = {
+  Silver: "Legs_Silver",
+  Gold: "Legs_Gold",
+};
+
+const SPEAKER_GRILLE_MATERIAL = {
+  Light: "Speaker_Light",
+  Dark: "Speaker_Dark",
+};
+
 /**
  * @param {object} selected - ConfiguratorContext's `selected` state
- * @returns {(name: string) => boolean} predicate for a mesh's visibility
+ * @returns {{ visibleMeshNames: Set<string>, materialByMesh: Record<string, string> }}
  */
-export function getMeshVisibility(selected) {
+export function getTestModelState(selected) {
+  const size = CABINET_SIZE_TOKEN[selected.cabinet.size];
   const veneer = selected.cabinet.woodVeneer;
+  const cabinetMesh = selected.cabinet.surface === "Smooth" ? "Cabinet_Smooth" : "Cabinet_Textured";
 
-  const activeConsole = `Console_${CABINET_SIZE_TOKEN[selected.cabinet.size]}_${veneer}`;
-  const activeCabinetDoor = `${CABINET_SURFACE_PREFIX[selected.cabinet.surface]}_${veneer}`;
-  const activeLegs = `Legs_${CABINET_SIZE_TOKEN[selected.cabinet.size]}_${selected.legs.material}`;
+  // The backdrop mesh is size-invariant in this export (just Scene_White /
+  // Scene_Orange, no _Small/_Large suffix) unlike Console_/Legs_.
+  const visibleMeshNames = new Set([`Console_${size}`, `Legs_${size}`, `Scene_${selected.scene.background}`, cabinetMesh]);
 
-  // No speaker cutout on the small cabinet, so nothing to show here.
-  let activeSpeaker = null;
+  const materialByMesh = {
+    [`Console_${size}`]: veneer,
+    [cabinetMesh]: veneer,
+    // legs.material may also be the cabinet's own veneer name — already a valid material, pass through.
+    [`Legs_${size}`]: LEG_MATERIAL_NAME[selected.legs.material] ?? selected.legs.material,
+  };
+
+  // No speaker cutout on the small cabinet — leave Speaker/NS_* out entirely.
   if (isSpeakerAllowed(selected)) {
-    activeSpeaker =
-      selected.speaker.included === "Speakers"
-        ? SPEAKER_GRILLE_NAME[selected.speaker.grille]
-        : `${NS_SURFACE_PREFIX[selected.cabinet.surface]}_${veneer}`;
+    if (selected.speaker.included === "Speakers") {
+      visibleMeshNames.add("Speaker");
+      materialByMesh.Speaker = SPEAKER_GRILLE_MATERIAL[selected.speaker.grille];
+    } else {
+      const nsMesh = selected.cabinet.surface === "Smooth" ? "NS_Smooth" : "NS_Textured";
+      visibleMeshNames.add(nsMesh);
+      materialByMesh[nsMesh] = veneer;
+    }
   }
 
-  // Backdrop follows the cabinet size — Scene_<Light/Dark color>_<Small/Large>.
-  const activeBackdrop = `Scene_${selected.scene.background}_${CABINET_SIZE_TOKEN[selected.cabinet.size]}`;
-
-  const activeNames = new Set(
-    [activeConsole, activeCabinetDoor, activeLegs, activeSpeaker, activeBackdrop].filter(Boolean),
-  );
-
-  return (name) => {
-    if (!isManagedMeshName(name)) return true; // static scenery, e.g. Floor
-    return activeNames.has(name);
-  };
+  return { visibleMeshNames, materialByMesh };
 }
 
 // Speaker options are unavailable when the smaller cabinet size is selected
