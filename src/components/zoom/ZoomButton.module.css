@@ -1,1 +1,6 @@
 /*ZoomButton.module.css*/
+.zoomBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
