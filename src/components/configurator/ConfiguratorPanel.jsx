@@ -7,6 +7,7 @@ import {
   getLegMaterialOptions,
   isSpeakerAvailable,
   speakerUnavailableMessage,
+  isGrilleVisible,
 } from "../../config/configuratorRules";
 import styles from "./ConfiguratorPanel.module.css";
 
@@ -72,15 +73,24 @@ function ConfiguratorPanel() {
   const visiblePartKeys = partKeys.slice(0, currentStepIndex + 1);
 
   return (
-    <div
-      ref={scrollContainerRef}
-      className={isComplete ? styles.scrollList : styles.fixedHeightList}
-    >
+    <div ref={scrollContainerRef} className={styles.panelBase}>
+      <div className={styles.spacer} />{" "}
+      {/*Spacer is used to fill up the space above the first card to position it at the bottom, since justify-content: flex-end disables scrolling*/}
       {visiblePartKeys.map((partKey) => {
         return (
           <OptionCard key={partKey} title={partKey}>
             {Object.entries(productOptions[partKey]).map(
               ([paramKey, param]) => {
+                const isGrilleParam =
+                  partKey === "speaker" && paramKey === "grille";
+
+                const grilleVisible = isGrilleVisible(
+                  selected.speaker.included,
+                );
+
+                if (isGrilleParam && !grilleVisible) {
+                  return null;
+                }
                 const isLegMaterial =
                   partKey === "materials" && paramKey === "legs";
                 const options = isLegMaterial

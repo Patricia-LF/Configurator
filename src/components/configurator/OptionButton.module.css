@@ -80,15 +80,18 @@
 
 /* Active state for plain text buttons */
 .textOption.active {
-  border: 1px dashed #ffdbc6;
+  border: 1px solid var(--border);
   background: var(--button-bg);
+  outline: 0.5px solid var(--border);
+  outline-offset: 2px;
 }
 
 /* Active state for swatches: should NOT cover the background image/color */
 .swatch.active {
-  border: 1px dashed var(--border);
-  box-shadow: 0 0 10px 2px rgba(253, 192, 157, 0.795);
+  border: 1px solid var(--border);
   opacity: 1;
+  outline: 0.5px solid var(--border);
+  outline-offset: 2px;
 }
 
 .inactive {

@@ -20,3 +20,8 @@ export function isSpeakerAvailable(cabinetSize) {
 
 export const speakerUnavailableMessage =
   "Speaker choices are not available with the smaller version.";
+
+// Speaker grille are invisible when no speaker is selected
+export function isGrilleVisible(speakerIncluded) {
+  return speakerIncluded === "Yes";
+}
