@@ -37,6 +37,11 @@ const SPEAKER_GRILLE_MATERIAL = {
   Dark: "Speaker_Dark",
 };
 
+const TURNTABLE_OUTER_MATERIAL = {
+  Basic: "Recordplayer_Turntable_Outer_Matte",
+  Acrylic: "Recordplayer_Turntable_Outer_Acrylic",
+};
+
 /**
  * @param {object} selected - ConfiguratorContext's `selected` state
  * @returns {{ visibleMeshNames: Set<string>, materialByMesh: Record<string, string> }}
@@ -55,13 +60,25 @@ export function getModelState(selected) {
     [cabinetMesh]: veneer,
     // legs material may also be the cabinet's own veneer name — already a valid material, pass through.
     [`Legs_${size}`]: LEG_MATERIAL_NAME[selected.materials.legs] ?? selected.materials.legs,
+    // Turntable body ships material-less (like Recordplayer_Cover) — the swatch
+    // material names follow "Recordplayer_Base_<Color>", matching the option values.
+    Recordplayer_Base: `Recordplayer_Base_${selected.turntable.baseColor}`,
+    // The platter disk itself — Recordplayer_Turntable_Inner underneath is
+    // unaffected by this choice.
+    Recordplayer_Turntable_Outer: TURNTABLE_OUTER_MATERIAL[selected.turntable.basePlatter],
   };
 
   // No speaker cutout on the small cabinet — leave Speaker/NS_* out entirely.
   if (isSpeakerAllowed(selected)) {
     if (selected.speaker.included === "Yes") {
-      visibleMeshNames.add("Speaker");
-      materialByMesh.Speaker = SPEAKER_GRILLE_MATERIAL[selected.speaker.grille];
+      if (selected.speaker.grille === "No Fabric") {
+        // No fabric grille — the speaker driver and its mounting screws sit exposed.
+        visibleMeshNames.add("Speaker_Open");
+        visibleMeshNames.add("Speaker_Screws");
+      } else {
+        visibleMeshNames.add("Speaker");
+        materialByMesh.Speaker = SPEAKER_GRILLE_MATERIAL[selected.speaker.grille];
+      }
     } else {
       const nsMesh = selected.materials.surface === "Smooth" ? "NS_Smooth" : "NS_Textured";
       visibleMeshNames.add(nsMesh);

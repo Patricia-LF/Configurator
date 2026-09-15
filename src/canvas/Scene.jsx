@@ -63,23 +63,24 @@ export default function Scene() {
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(mount.clientWidth, mount.clientHeight);
     renderer.shadowMap.enabled = true;
-    // VSMShadowMap blurs smoothly at large radius; PCFSoftShadowMap gets noisy here.
-    renderer.shadowMap.type = THREE.VSMShadowMap;
+    // The GLB's baked-in lights (Scene_Light_Top/Front) are PointLights, and
+    // three.js silently skips shadow maps for PointLights under VSMShadowMap
+    // (unsupported) — PCFShadowMap is the widest-compatible option that works
+    // for point lights.
+    renderer.shadowMap.type = THREE.PCFShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     // Dialed down to avoid clipping bright materials (env + key + fill lights stack up).
     renderer.toneMappingExposure = 0.6;
     mount.appendChild(renderer.domElement);
 
     // Kept low so the spotlights, not the HDRI, define the vignette.
-    scene.environmentIntensity = 0.2;
+    scene.environmentIntensity = 0.7;
 
     const hdrLoader = new HDRLoader();
     hdrLoader.load(hdriUrl, (texture) => {
       texture.mapping = THREE.EquirectangularReflectionMapping;
       scene.environment = texture;
     });
-
-    let fallbackLight;
 
     loadProductModel(productModelUrl).then(({ model, lights, cameras, animations }) => {
       if (cancelled) return;
@@ -115,88 +116,30 @@ export default function Scene() {
       console.log('[Scene] cameras from GLB:', getCameraViews(cameras));
       console.log('[Scene] animation clips from GLB:', animations.map((clip) => clip.name));
 
-      if (lights.length === 0) {
-        // SpotLight gives a falloff "pool of light" instead of an even wash.
-        fallbackLight = new THREE.SpotLight(0xffffff, 4);
-        fallbackLight.position.set(8, 3, 2);
-        // decay=0 keeps intensity constant within `distance`; angle/distance shape the falloff.
-        fallbackLight.decay = 0;
-        // Tight angle keeps the floor mostly dark instead of catching the whole cone.
-        fallbackLight.angle = Math.PI / 16;
-        fallbackLight.penumbra = 0.6;
-
-        // Needed for Scene_White/Orange's receiveShadow to have something to receive.
-        fallbackLight.castShadow = true;
-        fallbackLight.shadow.mapSize.set(2048, 2048);
-        // Avoids shadow acne.
-        fallbackLight.shadow.bias = -0.0015;
-        // More samples avoids banding at this blur radius.
-        fallbackLight.shadow.radius = 6;
-        fallbackLight.shadow.blurSamples = 25;
-
-        if (!productBounds.isEmpty()) {
-          const center = productBounds.getCenter(new THREE.Vector3());
-          const boxSize = productBounds.getSize(new THREE.Vector3());
-          const shadowExtent = Math.max(boxSize.x, boxSize.y, boxSize.z) * 1.5;
-
-          // Nudged left to match the model's visual center (framed by the
-          // baked camera, not this bounding box).
-          const lightCenterX = center.x - shadowExtent * 0.25;
-
-          // Directly overhead; positioned relative to center/shadowExtent
-          // so it scales with whatever's loaded.
-          fallbackLight.position.set(
-            lightCenterX,
-            center.y + shadowExtent * 5,
-            center.z,
-          );
-
-          // Centers the shadow frustum on the product instead of the origin.
-          fallbackLight.target.position.set(lightCenterX, center.y, center.z);
-          scene.add(fallbackLight.target);
-
-          // Must bracket the actual light->target distance or the model
-          // gets clipped out of the shadow frustum.
-          const lightDistance = fallbackLight.position.distanceTo(center);
-          fallbackLight.shadow.camera.near = Math.max(0.1, lightDistance - shadowExtent * 3);
-          fallbackLight.shadow.camera.far = lightDistance + shadowExtent * 3;
-          fallbackLight.distance = lightDistance * 2.5;
-          fallbackLight.shadow.camera.updateProjectionMatrix();
-
-          // Fill light for raking detail on the Speaker grille — the
-          // overhead key light above hits it too straight-on to show it.
-          const fillLight = new THREE.SpotLight(0xffffff, 8);
-          fillLight.decay = 0;
-          // Tight cone so it doesn't spill onto the floor in front of the model.
-          fillLight.angle = Math.PI / 12;
-          fillLight.penumbra = 0.7;
-          fillLight.position.set(
-            center.x + shadowExtent * 3,
-            center.y + shadowExtent * 0.5,
-            center.z + shadowExtent * 1.5,
-          );
-          fillLight.target.position.copy(center);
-          scene.add(fillLight.target);
-          // Must exceed the light's real distance to its target, or falloff zeroes it out early.
-          fillLight.distance = fillLight.position.distanceTo(center) * 2;
-          scene.add(fillLight);
+      // WEBBTO3D_FINAL_TEST.glb has its own baked-in lights (KHR_lights_punctual),
+      // already added to the scene as part of `scene.add(model)` above — enable
+      // shadow casting on them so Scene_White/Orange's receiveShadow has something
+      // to receive, same as the manual fallback lights used to provide.
+      //
+      // Blender's glTF exporter writes physically-based candela values (tens of
+      // thousands here) meant for a physically-correct exposure pipeline, which
+      // blows out this scene's tone mapping/exposure — so intensities are
+      // re-tuned by hand per light, matching the values from threejs.org/editor.
+      const GLB_LIGHT_INTENSITY_BY_NAME = {
+        Scene_Light_Top: 20,
+        Scene_Light_Front: 10,
+      };
+      lights.forEach((light) => {
+        if (light.name in GLB_LIGHT_INTENSITY_BY_NAME) {
+          light.intensity = GLB_LIGHT_INTENSITY_BY_NAME[light.name];
         }
 
-        // Lights the backdrop's back-left corner for visual interest,
-        // narrowed/pulled back so it doesn't spill onto the product.
-        const backdropAccentLight = new THREE.SpotLight(0xffffff, 2);
-        backdropAccentLight.decay = 0;
-        backdropAccentLight.angle = Math.PI / 10;
-        backdropAccentLight.penumbra = 0.6;
-        backdropAccentLight.position.copy(model.position).add(new THREE.Vector3(-1.8, 2.0, 0.3));
-        const backdropAccentTarget = model.position.clone().add(new THREE.Vector3(-2.2, 1.6, -2.2));
-        backdropAccentLight.target.position.copy(backdropAccentTarget);
-        scene.add(backdropAccentLight.target);
-        backdropAccentLight.distance = backdropAccentLight.position.distanceTo(backdropAccentTarget) * 2.5;
-        scene.add(backdropAccentLight);
-
-        scene.add(fallbackLight);
-      }
+        if ('castShadow' in light) {
+          light.castShadow = true;
+          light.shadow.mapSize.set(2048, 2048);
+          light.shadow.bias = -0.0015;
+        }
+      });
 
       if (cameras.length > 0) {
         // Use the first exported camera's framing as the starting view.

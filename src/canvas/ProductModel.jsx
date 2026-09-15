@@ -3,7 +3,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { getModelState } from '../config/configuratorRules';
 import { FIXED_MATERIAL_BY_MESH } from '../config/productOptions';
 
-export const productModelUrl = '/models/3DTOWEBB_PEVIEW_6.glb';
+export const productModelUrl = '/models/3DTOWEBB_FINAL_TEST_ADD_ACRYLIC_BASE.glb';
 
 /**
  * Loads the product GLB: the mesh hierarchy, any KHR_lights_punctual
@@ -88,13 +88,28 @@ function isManagedMeshName(name) {
   return MANAGED_PREFIXES.some((prefix) => name.startsWith(prefix));
 }
 
+// A glTF mesh with multiple material slots (e.g. Speaker_Open's rubber
+// surround + net + frame) loads as a Group named after the node ("Speaker_Open")
+// wrapping child Meshes named after the underlying mesh data instead ("Plane.020",
+// "Plane.020_1", ...) — so the managed part name lives on the parent, not the mesh.
+function getPartName(mesh) {
+  if (isManagedMeshName(mesh.name)) return mesh.name;
+  if (mesh.parent && isManagedMeshName(mesh.parent.name)) return mesh.parent.name;
+  return mesh.name;
+}
+
+// Meshes that should never cast a shadow, e.g. the glass record player
+// cover — three.js's shadow pass treats any castShadow mesh as fully
+// opaque regardless of the material's actual transparency/transmission.
+const NEVER_CASTS_SHADOW = new Set(['Recordplayer_Cover']);
+
 // Run once right after the model loads: enables shadows on every mesh and
 // hides the material-swatch nodes (they're not part of the visible product).
 export function prepareProductModel(model) {
   model.traverse((child) => {
     if (!child.isMesh) return;
 
-    child.castShadow = true;
+    child.castShadow = !NEVER_CASTS_SHADOW.has(child.name);
     child.receiveShadow = true;
 
     if (child.name.startsWith(MATERIAL_SWATCH_PREFIX)) {
@@ -125,17 +140,21 @@ export function applyConfiguratorSelection(model, selected, materialsByName) {
   const { visibleMeshNames, materialByMesh } = getModelState(selected);
 
   model.traverse((child) => {
-    if (!child.isMesh || !isManagedMeshName(child.name)) return;
+    if (!child.isMesh) return;
 
-    child.visible = visibleMeshNames.has(child.name);
+    const partName = getPartName(child);
 
-    const materialName = materialByMesh[child.name];
+    if (isManagedMeshName(partName)) {
+      child.visible = visibleMeshNames.has(partName);
+    }
+
+    const materialName = materialByMesh[partName];
     if (!materialName) return;
 
     if (materialsByName.has(materialName)) {
       child.material = materialsByName.get(materialName);
     } else {
-      console.warn(`[ProductModel] material "${materialName}" not found for mesh "${child.name}"`);
+      console.warn(`[ProductModel] material "${materialName}" not found for mesh "${partName}"`);
     }
   });
 }
