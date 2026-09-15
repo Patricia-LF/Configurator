@@ -7,10 +7,11 @@ export const productModelUrl = '/models/3DTOWEBB_PEVIEW_6.glb';
 
 /**
  * Loads the product GLB: the mesh hierarchy, any KHR_lights_punctual
- * lights, and any exported cameras.
+ * lights, any exported cameras, and any baked animation clips (e.g. camera
+ * fly-throughs targeting one of those cameras' nodes).
  *
  * @param {string} [url]
- * @returns {Promise<{ gltf: import('three/addons/loaders/GLTFLoader.js').GLTF, model: THREE.Group, lights: THREE.Light[], cameras: THREE.Camera[] }>}
+ * @returns {Promise<{ gltf: import('three/addons/loaders/GLTFLoader.js').GLTF, model: THREE.Group, lights: THREE.Light[], cameras: THREE.Camera[], animations: THREE.AnimationClip[] }>}
  */
 export function loadProductModel(url = productModelUrl) {
   const loader = new GLTFLoader();
@@ -34,6 +35,7 @@ export function loadProductModel(url = productModelUrl) {
         });
 
         const cameras = gltf.cameras ?? [];
+        const animations = gltf.animations ?? [];
 
         if (lights.length === 0) {
           console.warn(`[ProductModel] "${url}" has no lights (KHR_lights_punctual) baked in.`);
@@ -41,8 +43,11 @@ export function loadProductModel(url = productModelUrl) {
         if (cameras.length === 0) {
           console.warn(`[ProductModel] "${url}" has no cameras baked in.`);
         }
+        if (animations.length === 0) {
+          console.warn(`[ProductModel] "${url}" has no animation clips baked in.`);
+        }
 
-        resolve({ gltf, model, lights, cameras });
+        resolve({ gltf, model, lights, cameras, animations });
       },
       undefined,
       reject

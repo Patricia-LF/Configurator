@@ -28,6 +28,11 @@ export default function Scene() {
   const mountRef = useRef(null);
   const modelRef = useRef(null);
   const materialsByNameRef = useRef(null);
+  // Baked-in camera + its AnimationMixer/clips from the GLB, kept alongside
+  // (not instead of) the orbit-controlled `camera` below.
+  const cinematicCameraRef = useRef(null);
+  const cinematicMixerRef = useRef(null);
+  const cinematicClipsRef = useRef([]);
   const { selected } = useConfigurator();
   const { isDarkMode } = useTheme();
 
@@ -76,10 +81,18 @@ export default function Scene() {
 
     let fallbackLight;
 
-    loadProductModel(productModelUrl).then(({ model, lights, cameras }) => {
+    loadProductModel(productModelUrl).then(({ model, lights, cameras, animations }) => {
       if (cancelled) return;
 
       prepareProductModel(model);
+
+      // Baked-in camera + clips (e.g. a zoom-to-area fly-through), fetched
+      // for later use — this doesn't touch the orbit `camera`/`controls` below.
+      cinematicCameraRef.current = cameras[0] ?? null;
+      cinematicClipsRef.current = animations;
+      if (cameras.length > 0 && animations.length > 0) {
+        cinematicMixerRef.current = new THREE.AnimationMixer(model);
+      }
 
       model.scale.set(1, 1, 1);
       model.position.set(-0.5, 0, 0);
@@ -100,6 +113,7 @@ export default function Scene() {
 
       console.log('[Scene] lights from GLB:', getLightColors(lights));
       console.log('[Scene] cameras from GLB:', getCameraViews(cameras));
+      console.log('[Scene] animation clips from GLB:', animations.map((clip) => clip.name));
 
       if (lights.length === 0) {
         // SpotLight gives a falloff "pool of light" instead of an even wash.
@@ -235,9 +249,12 @@ export default function Scene() {
     controls.minAzimuthAngle = -Math.PI / 2;
     controls.maxAzimuthAngle = Math.PI / 2;
 
+    const timer = new THREE.Timer();
     let frameId;
-    const animate = () => {
+    const animate = (timestamp) => {
       frameId = requestAnimationFrame(animate);
+      timer.update(timestamp);
+      cinematicMixerRef.current?.update(timer.getDelta());
       controls.update();
       renderer.render(scene, camera);
     };
