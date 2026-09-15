@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { getTestModelState } from '../config/configuratorRules';
+import { getModelState } from '../config/configuratorRules';
 import { FIXED_MATERIAL_BY_MESH } from '../config/productOptions';
 
 export const productModelUrl = '/models/3DTOWEBB_PEVIEW_6.glb';
@@ -122,7 +122,7 @@ export function applyFixedMaterials(model, materialsByName) {
 // Updates the model's mesh visibility and material assignments based on the
 // current configurator selection. This is the "apply a selection to the model"
 export function applyConfiguratorSelection(model, selected, materialsByName) {
-  const { visibleMeshNames, materialByMesh } = getTestModelState(selected);
+  const { visibleMeshNames, materialByMesh } = getModelState(selected);
 
   model.traverse((child) => {
     if (!child.isMesh || !isManagedMeshName(child.name)) return;

@@ -41,7 +41,7 @@ const SPEAKER_GRILLE_MATERIAL = {
  * @param {object} selected - ConfiguratorContext's `selected` state
  * @returns {{ visibleMeshNames: Set<string>, materialByMesh: Record<string, string> }}
  */
-export function getTestModelState(selected) {
+export function getModelState(selected) {
   const size = CABINET_SIZE_TOKEN[selected.size.length];
   const veneer = selected.materials.woodVeneer;
   const cabinetMesh = selected.materials.surface === "Smooth" ? "Cabinet_Smooth" : "Cabinet_Textured";
