@@ -23,6 +23,10 @@ function getInitialState() {
 
 export function ConfiguratorProvider({ children }) {
   const [selected, setSelected] = useState(getInitialState);
+  // Which ConfiguratorPanel step/part is currently active, e.g. "turntable" —
+  // exposed so other parts of the app (like Scene's cinematic camera) can
+  // react to the user reaching a given step.
+  const [activePart, setActivePart] = useState(null);
 
   // Updates one parameter for one part, e.g. setOption("legs", "material", "Gold").
   // Speaker fields are left as-is on "118cm" — isSpeakerAllowed (configuratorRules.js)
@@ -37,7 +41,7 @@ export function ConfiguratorProvider({ children }) {
     }));
   }
 
-  const value = { selected, setOption };
+  const value = { selected, setOption, activePart, setActivePart };
 
   return (
     <ConfiguratorContext.Provider value={value}>
