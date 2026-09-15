@@ -95,7 +95,7 @@ export default function Scene() {
       }
 
       model.scale.set(1, 1, 1);
-      model.position.set(-0.5, 0, 0);
+      model.position.set(-0.4, 0, 0);
       scene.add(model);
 
       modelRef.current = model;
@@ -246,8 +246,8 @@ export default function Scene() {
     controls.maxDistance = 5.5;
     controls.minPolarAngle = 0.3;
     controls.maxPolarAngle = Math.PI / 2 - 0.05;
-    controls.minAzimuthAngle = -Math.PI / 2;
-    controls.maxAzimuthAngle = Math.PI / 2;
+    controls.minAzimuthAngle = -Math.PI / 12;
+    controls.maxAzimuthAngle = Math.PI / 12;
 
     const timer = new THREE.Timer();
     let frameId;
