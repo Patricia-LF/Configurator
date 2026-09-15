@@ -112,8 +112,8 @@ export const productOptions = {
     basePlatter: {
       label: "Base Platter",
       options: [
-        { label: "Basic", value: "Basic", price: 0 },
-        { label: "Acrylic", value: "Acrylic", price: 500 },
+        { label: "Basic", value: "Basic", background: "#131313", price: 0 },
+        { label: "Acrylic", value: "Acrylic", background: "#DFDFDF", price: 500 },
       ],
     },
   },
