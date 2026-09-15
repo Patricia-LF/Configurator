@@ -33,7 +33,7 @@ function App() {
 
       <div className="bottom-bar">
         <TotalPrice />
-        <button className="proceed-btn">proceed</button>
+        <button className="checkout-btn">Checkout</button>
       </div>
     </div>
   );
