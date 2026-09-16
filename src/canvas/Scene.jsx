@@ -277,6 +277,18 @@ export default function Scene() {
         const materialsByName = collectMaterialsByName(model);
         materialsByNameRef.current = materialsByName;
 
+        // Legs_Silver is a copy of the same metallic material as Recordplayer_Metallic_Parts, 
+        // so it can be swapped in for the legs without affecting the rest of the product.
+        const recordPlayerMetal = materialsByName.get("Recordplayer_Metallic_Parts");
+        if (recordPlayerMetal) {
+          materialsByName.set("Legs_Silver", recordPlayerMetal);
+
+          // Legs_Gold is a copy of the same metallic material, but with a gold tint.
+          const goldMetal = recordPlayerMetal.clone();
+          goldMetal.color.setRGB(0.76, 0.59, 0.30);
+          materialsByName.set("Legs_Gold", goldMetal);
+        }
+
         applyFixedMaterials(model, materialsByName);
 
         applyConfiguratorSelection(model, selectedRef.current, materialsByName);
