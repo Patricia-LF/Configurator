@@ -51,10 +51,5 @@ export function calculateTotalPrice(selected) {
     selected.turntable.baseColor,
   );
 
-  total += getOptionPrice(
-    productOptions.turntable.basePlatter.options,
-    selected.turntable.basePlatter,
-  );
-
   return total;
 }
