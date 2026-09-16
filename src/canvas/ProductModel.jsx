@@ -3,7 +3,11 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { getModelState } from "../config/configuratorRules";
 import { FIXED_MATERIAL_BY_MESH } from "../config/productOptions";
 
-export const productModelUrl = "/models/3DTOWEBB_FINAL_TEST_CAM_ANIM.glb";
+export const productModelUrl = "/models/3DTOWEBB_FINAL_TEST_UPDATE.glb";
+// This older export still carries the baked-in "Main_Camera" node + its
+// animation clips (used for the turntable fly-through) — productModelUrl's
+// export doesn't include them.
+export const cameraModelUrl = "/models/3DTOWEBB_FINAL_TEST_CAM_ANIM.glb";
 
 /**
  * Loads the product GLB: the mesh hierarchy, any KHR_lights_punctual
@@ -52,6 +56,41 @@ export function loadProductModel(url = productModelUrl) {
         }
 
         resolve({ gltf, model, lights, cameras, animations });
+      },
+      undefined,
+      reject,
+    );
+  });
+}
+
+/**
+ * Loads just a baked-in camera + its animation clips from a GLB, used to
+ * source the turntable camera fly-through from `cameraModelUrl` while the
+ * rest of the scene is built from `productModelUrl`.
+ *
+ * @param {string} [url]
+ * @returns {Promise<{ camera: THREE.Camera | null, animations: THREE.AnimationClip[] }>}
+ */
+export function loadCameraAnimation(url = cameraModelUrl) {
+  const loader = new GLTFLoader();
+
+  return new Promise((resolve, reject) => {
+    loader.load(
+      url,
+      (gltf) => {
+        const camera = gltf.cameras?.[0] ?? null;
+        const animations = gltf.animations ?? [];
+
+        if (!camera) {
+          console.warn(`[ProductModel] "${url}" has no cameras baked in.`);
+        }
+        if (animations.length === 0) {
+          console.warn(
+            `[ProductModel] "${url}" has no animation clips baked in.`,
+          );
+        }
+
+        resolve({ camera, animations });
       },
       undefined,
       reject,

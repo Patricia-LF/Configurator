@@ -41,6 +41,8 @@ export const legMaterialBaseOptions = [
 // selection — the export ships them material-less otherwise.
 export const FIXED_MATERIAL_BY_MESH = {
   Recordplayer_Cover: 'Recordplayer_Cover_Glass',
+  Recordplayer_Turntable_Inner: 'Recordplayer_Turntable_Outer_Matte',
+  Recordplayer_Turntable_Outer: 'Recordplayer_Turntable_Outer_Matte',
 };
 
 export const productOptions = {
@@ -106,14 +108,6 @@ export const productOptions = {
         { label: "Orange", value: "Orange", background: "#CC4C15", price: 0 },
         { label: "Green", value: "Green", background: "#52582A", price: 0 },
         { label: "Red", value: "Red", background: "#641717", price: 0 },
-      ],
-    },
-
-    basePlatter: {
-      label: "Base Platter",
-      options: [
-        { label: "Basic", value: "Basic", background: "#131313", price: 0 },
-        { label: "Acrylic", value: "Acrylic", background: "#DFDFDF", price: 500 },
       ],
     },
   },
