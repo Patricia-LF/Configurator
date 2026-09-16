@@ -13,7 +13,13 @@ import styles from "./ConfiguratorPanel.module.css";
 
 function ConfiguratorPanel() {
   const { selected, setOption, setActivePart } = useConfigurator();
-  const partKeys = Object.keys(productOptions);
+
+  const speakerAvailable = isSpeakerAvailable(selected.size.length);
+  // Speaker card doesn't exist at all on the small size — the message
+  // explaining why lives on the Size card instead.
+  const partKeys = Object.keys(productOptions).filter(
+    (key) => key !== "speaker" || speakerAvailable,
+  );
 
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [touchedParams, setTouchedParams] = useState({});
@@ -41,19 +47,13 @@ function ConfiguratorPanel() {
     });
   }
 
-  // Advance to the next card once every required parameter on the current card has been touched
+  // Advance to the next card once every parameter on the current card has been touched
   useEffect(() => {
     const currentPart = partKeys[currentStepIndex];
     const paramKeys = Object.keys(productOptions[currentPart]);
-
-    // Speaker params don't need to be touched if speaker isn't available at all
-    const speakerUnavailable =
-      currentPart === "speaker" && !isSpeakerAvailable(selected.size.length);
-
-    const requiredParamCount = speakerUnavailable ? 0 : paramKeys.length;
     const touchedCount = touchedParams[currentPart]?.size ?? 0;
 
-    if (touchedCount >= requiredParamCount) {
+    if (touchedCount >= paramKeys.length) {
       if (currentStepIndex < partKeys.length - 1) {
         setCurrentStepIndex((prev) => prev + 1);
       } else {
@@ -93,6 +93,7 @@ function ConfiguratorPanel() {
               ([paramKey, param]) => {
                 const isGrilleParam =
                   partKey === "speaker" && paramKey === "grille";
+                const isSpeakerGrille = isGrilleParam;
 
                 const grilleVisible = isGrilleVisible(
                   selected.speaker.included,
@@ -101,16 +102,12 @@ function ConfiguratorPanel() {
                 if (isGrilleParam && !grilleVisible) {
                   return null;
                 }
+
                 const isLegMaterial =
                   partKey === "materials" && paramKey === "legs";
                 const options = isLegMaterial
                   ? getLegMaterialOptions(selected.materials.woodVeneer)
                   : param.options;
-
-                const isSpeakerParam = partKey === "speaker";
-                const speakerAvailable = isSpeakerAvailable(
-                  selected.size.length,
-                );
 
                 return (
                   <OptionButton
@@ -123,13 +120,16 @@ function ConfiguratorPanel() {
                     onChange={(value) =>
                       handleOptionChange(partKey, paramKey, value)
                     }
-                    disabled={isSpeakerParam && !speakerAvailable}
-                    disabledMessage={
-                      isSpeakerParam ? speakerUnavailableMessage : undefined
-                    }
+                    compact={isSpeakerGrille}
                   />
                 );
               },
+            )}
+
+            {partKey === "size" && !speakerAvailable && (
+              <p className={styles.disabledMessage}>
+                {speakerUnavailableMessage}
+              </p>
             )}
           </OptionCard>
         );
