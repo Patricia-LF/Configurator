@@ -26,6 +26,10 @@ function easeOutCubic(progress) {
   return 1 - Math.pow(1 - progress, 3);
 }
 
+function easeOutQuint(progress) {
+  return 1 - Math.pow(1 - progress, 5);
+}
+
 function getZoomAnchorPosition(target, mesh) {
   const box = new THREE.Box3().setFromObject(mesh);
   const center = box.getCenter(new THREE.Vector3());
@@ -70,7 +74,11 @@ function offsetPositionTrack(clip, offset, weightForProgress) {
     const progress =
       pathLengthSq === 0
         ? 0
-        : THREE.MathUtils.clamp(current.sub(start).dot(path) / pathLengthSq, 0, 1);
+        : THREE.MathUtils.clamp(
+            current.sub(start).dot(path) / pathLengthSq,
+            0,
+            1,
+          );
     const weight = weightForProgress(progress);
 
     values[idx] += offset.x * weight;
@@ -81,7 +89,12 @@ function offsetPositionTrack(clip, offset, weightForProgress) {
 
 // Blends a clip's position+quaternion tracks toward a pose, weighted by
 // progress (see offsetPositionTrack) — 0 keeps the baked value, 1 replaces it.
-function blendTrackTowardPose(clip, targetPosition, targetQuaternion, weightForProgress) {
+function blendTrackTowardPose(
+  clip,
+  targetPosition,
+  targetQuaternion,
+  weightForProgress,
+) {
   const posTrack = clip.tracks.find((t) => t.name.endsWith(".position"));
   if (!posTrack) return;
   const rotTrack = clip.tracks.find((t) => t.name.endsWith(".quaternion"));
@@ -106,7 +119,11 @@ function blendTrackTowardPose(clip, targetPosition, targetQuaternion, weightForP
     const progress =
       pathLengthSq === 0
         ? 0
-        : THREE.MathUtils.clamp(current.clone().sub(start).dot(path) / pathLengthSq, 0, 1);
+        : THREE.MathUtils.clamp(
+            current.clone().sub(start).dot(path) / pathLengthSq,
+            0,
+            1,
+          );
     const weight = weightForProgress(progress);
 
     blendedPos.copy(current).lerp(targetPosition, weight);
@@ -162,7 +179,7 @@ export default function Scene() {
     scene: { background: isDarkMode ? "Orange" : "White" },
   };
 
-  const { zoomTarget, anchorPositionsRef } = useZoom();
+  const { zoomTarget, anchorPositionsRef, triggerZoom } = useZoom();
 
   function startCameraTween(targetPosition, target) {
     if (!targetPosition) return;
@@ -171,7 +188,7 @@ export default function Scene() {
       targetPosition: targetPosition.clone(),
       target, // "legs" | "speaker" | "texture" | undefined (zoom-out)
       startTime: performance.now(),
-      duration: 800,
+      duration: 1500,
     };
   }
 
@@ -185,12 +202,28 @@ export default function Scene() {
         modelSelection,
         materialsByNameRef.current,
       );
+
+      // Re-scan for the currently-visible zoom anchor meshes — which mesh
+      // represents each target can change with the selection (e.g.
+      // Legs_Large_X vs Legs_Small_X, or Speaker becoming hidden entirely
+      // when the small size is chosen).
+      zoomAnchorMeshesRef.current = getZoomAnchorMeshes(modelRef.current);
+
+      // If the currently active zoom target's part just became unavailable
+      // (e.g. speaker hidden after switching to the small size), zoom back out.
+      if (zoomTarget && !zoomAnchorMeshesRef.current[zoomTarget]) {
+        triggerZoom(zoomTarget);
+      }
     }
   }, [selected, isDarkMode]);
 
   const ZOOM_DISTANCE = 2; // how close the camera gets to the anchor — tune to taste
 
+  const zoomTargetRef = useRef(null); // mirrors zoomTarget, since the animate() effect has [] deps
+
   useEffect(() => {
+    zoomTargetRef.current = zoomTarget;
+
     if (zoomTarget) {
       const mesh = zoomAnchorMeshesRef.current[zoomTarget];
       if (!mesh || !defaultCameraPositionRef.current) return;
@@ -263,7 +296,9 @@ export default function Scene() {
         cinematicCameraRef.current = cinematic.camera;
         cinematicClipsRef.current = cinematic.animations;
         if (cinematic.camera && cinematic.animations.length > 0) {
-          cinematicMixerRef.current = new THREE.AnimationMixer(cinematic.camera);
+          cinematicMixerRef.current = new THREE.AnimationMixer(
+            cinematic.camera,
+          );
         }
 
         model.scale.set(1, 1, 1);
@@ -330,7 +365,8 @@ export default function Scene() {
             const center = productBounds.getCenter(new THREE.Vector3());
             const boxSize = productBounds.getSize(new THREE.Vector3());
             const maxDim = Math.max(boxSize.x, boxSize.y, boxSize.z);
-            const fitDistance = (maxDim / 2) / Math.tan((camera.fov * Math.PI) / 360);
+            const fitDistance =
+              maxDim / 2 / Math.tan((camera.fov * Math.PI) / 360);
 
             camera.near = fitDistance / 100;
             camera.far = fitDistance * 100;
@@ -428,20 +464,6 @@ export default function Scene() {
         // the position we're setting here.
         const tween = cameraTweenRef.current;
 
-        if (!tween.startPosition) {
-          tween.startPosition = camera.position.clone();
-        }
-
-        const elapsed = performance.now() - tween.startTime;
-        const progress = Math.min(elapsed / tween.duration, 1);
-        const eased = easeOutCubic(progress);
-
-        camera.position.lerpVectors(
-          tween.startPosition,
-          tween.targetPosition,
-          eased,
-        );
-
         const lookAtTarget =
           tween.target && zoomAnchorMeshesRef.current[tween.target]
             ? getZoomAnchorPosition(
@@ -450,13 +472,48 @@ export default function Scene() {
               )
             : controls.target;
 
-        camera.lookAt(lookAtTarget);
+        if (!tween.startPosition) {
+          tween.startPosition = camera.position.clone();
+          tween.startQuaternion = camera.quaternion.clone();
+
+          // Compute the orientation the camera will have once it reaches
+          // targetPosition and looks at lookAtTarget — done once, up front,
+          // so rotation can be eased smoothly instead of snapping every frame.
+          const originalPosition = camera.position.clone();
+          const originalQuaternion = camera.quaternion.clone();
+          camera.position.copy(tween.targetPosition);
+          camera.lookAt(lookAtTarget);
+          tween.endQuaternion = camera.quaternion.clone();
+          camera.position.copy(originalPosition);
+          camera.quaternion.copy(originalQuaternion);
+        }
+
+        const elapsed = performance.now() - tween.startTime;
+        const progress = Math.min(elapsed / tween.duration, 1);
+        const eased = easeOutQuint(progress);
+
+        camera.position.lerpVectors(
+          tween.startPosition,
+          tween.targetPosition,
+          eased,
+        );
+        camera.quaternion.slerpQuaternions(
+          tween.startQuaternion,
+          tween.endQuaternion,
+          eased,
+        );
 
         if (progress >= 1) {
           camera.position.copy(tween.targetPosition);
-          camera.lookAt(lookAtTarget);
+          camera.quaternion.copy(tween.endQuaternion);
           cameraTweenRef.current = null;
         }
+      } else if (zoomTargetRef.current) {
+        // Tween finished, but still zoomed onto a specific part — stay parked
+        // exactly where the tween left the camera. Don't call controls.update():
+        // its min/maxDistance and angle constraints are tuned for the default
+        // view, and controls.target is still the product's center rather than
+        // the anchor, so it would clamp the camera to the wrong position.
       } else {
         controls.update();
       }
@@ -519,8 +576,10 @@ export default function Scene() {
     const clip = cinematicTurntableClipRef.current;
     if (!mixer || !controls || !cinematicCameraRef.current || !clip) return;
 
-    const enteringTurntable = activePart === "turntable" && prevActivePart !== "turntable";
-    const leavingTurntable = prevActivePart === "turntable" && activePart !== "turntable";
+    const enteringTurntable =
+      activePart === "turntable" && prevActivePart !== "turntable";
+    const leavingTurntable =
+      prevActivePart === "turntable" && activePart !== "turntable";
     if (!enteringTurntable && !leavingTurntable) return;
 
     // Pointer input is ignored outright while a clip is playing.
