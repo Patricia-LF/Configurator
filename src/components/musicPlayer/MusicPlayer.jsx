@@ -6,12 +6,12 @@ import { useTheme } from "../../hooks/useTheme";
 
 // Icon names refer to the THEME they're shown in, not their own color —
 // "Light" icons are dark-colored (shown against light backgrounds), and vice versa
-import pauseBtn from "../../assets/icons/pause-btn.png"; // light-colored icon, used in dark mode
-import nextBtn from "../../assets/icons/next-btn.png";
-import playBtn from "../../assets/icons/play-btn.png";
-import pauseBtnLight from "../../assets/icons/pause-btn-light.png"; // dark-colored icon, used in light mode
-import nextBtnLight from "../../assets/icons/next-btn-light.png";
-import playBtnLight from "../../assets/icons/play-btn-light.png";
+import pauseBtn from "../../assets/icons/pause-btn.svg"; // light-colored icon, used in dark mode
+import nextBtn from "../../assets/icons/next-btn.svg";
+import playBtn from "../../assets/icons/play-btn.svg";
+import pauseBtnLight from "../../assets/icons/pause-btn-light.svg"; // dark-colored icon, used in light mode
+import nextBtnLight from "../../assets/icons/next-btn-light.svg";
+import playBtnLight from "../../assets/icons/play-btn-light.svg";
 
 // Example of an album with tracks - same albums as VinylCoverFlow in App.jsx
 const album = [
@@ -70,13 +70,19 @@ export default function MusicPlayer({ start = false, disk = null, onBack }) {
     setCurrentSongIndex((prevIndex) => (prevIndex + 1) % album.length);
   };
 
-  const recordClassName = [styles.record, stage !== "hidden" && styles["record--risen"]]
+  const recordClassName = [
+    styles.record,
+    stage !== "hidden" && styles["record--risen"],
+  ]
     .filter(Boolean)
     .join(" ");
 
   return (
     <section className={styles["music-container"]}>
-      <div className={recordClassName} onTransitionEnd={handleRecordTransitionEnd}>
+      <div
+        className={recordClassName}
+        onTransitionEnd={handleRecordTransitionEnd}
+      >
         <img src={recordIcon} className={styles["record-disk"]} alt="" />
         {disk?.image && (
           <img src={disk.image} className={styles["record-label"]} alt="" />
