@@ -397,11 +397,13 @@ export default function Scene() {
           }
         }
 
-        // Start fully tilted down (maxPolarAngle) instead of the artist's
-        // camera angle, so every reload begins at the same view.
+        // Start fully tilted down (maxPolarAngle) and fully zoomed out
+        // (maxDistance) instead of the artist's camera angle/distance, so
+        // every reload begins at the same, most-zoomed-out view.
         const offset = camera.position.clone().sub(controls.target);
         const spherical = new THREE.Spherical().setFromVector3(offset);
         spherical.phi = controls.maxPolarAngle;
+        spherical.radius = controls.maxDistance;
         camera.position
           .copy(controls.target)
           .add(new THREE.Vector3().setFromSpherical(spherical));
