@@ -12,7 +12,6 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 16px;
   text-align: left;
   scrollbar-width: none;
   -ms-overflow-style: none;

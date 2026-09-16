@@ -1,9 +1,9 @@
-import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { getModelState } from '../config/configuratorRules';
-import { FIXED_MATERIAL_BY_MESH } from '../config/productOptions';
+import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { getModelState } from "../config/configuratorRules";
+import { FIXED_MATERIAL_BY_MESH } from "../config/productOptions";
 
-export const productModelUrl = '/models/3DTOWEBB_FINAL_TEST_ADD_ACRYLIC_BASE.glb';
+export const productModelUrl = "/models/3DTOWEBB_FINAL_TEST_CAM_ANIM.glb";
 
 /**
  * Loads the product GLB: the mesh hierarchy, any KHR_lights_punctual
@@ -38,19 +38,23 @@ export function loadProductModel(url = productModelUrl) {
         const animations = gltf.animations ?? [];
 
         if (lights.length === 0) {
-          console.warn(`[ProductModel] "${url}" has no lights (KHR_lights_punctual) baked in.`);
+          console.warn(
+            `[ProductModel] "${url}" has no lights (KHR_lights_punctual) baked in.`,
+          );
         }
         if (cameras.length === 0) {
           console.warn(`[ProductModel] "${url}" has no cameras baked in.`);
         }
         if (animations.length === 0) {
-          console.warn(`[ProductModel] "${url}" has no animation clips baked in.`);
+          console.warn(
+            `[ProductModel] "${url}" has no animation clips baked in.`,
+          );
         }
 
         resolve({ gltf, model, lights, cameras, animations });
       },
       undefined,
-      reject
+      reject,
     );
   });
 }
@@ -59,7 +63,7 @@ export function loadProductModel(url = productModelUrl) {
 export function getLightColors(lights) {
   return lights.map((light) => ({
     name: light.name,
-    type: light.type, 
+    type: light.type,
     color: light.color.clone(),
     intensity: light.intensity,
   }));
@@ -69,20 +73,27 @@ export function getLightColors(lights) {
 export function getCameraViews(cameras) {
   return cameras.map((camera) => ({
     name: camera.name,
-    type: camera.isPerspectiveCamera ? 'perspective' : 'orthographic',
+    type: camera.isPerspectiveCamera ? "perspective" : "orthographic",
     position: camera.position.clone(),
     quaternion: camera.quaternion.clone(),
   }));
 }
 
-// Prefix of the material-swatch nodes in the model. 
-// These are not part of the visible product, but they carry the real materials 
+// Prefix of the material-swatch nodes in the model.
+// These are not part of the visible product, but they carry the real materials
 // into the glTF's materials array so they can be fetched and reassigned onto the real product parts.
-const MATERIAL_SWATCH_PREFIX = 'Sample_Cube_';
+const MATERIAL_SWATCH_PREFIX = "Sample_Cube_";
 
 // Node-name prefixes the selection logic below manages. 'Speaker' has no
 // trailing underscore — it's a single shape shared by both grille colors.
-const MANAGED_PREFIXES = ['Console_', 'Legs_', 'Cabinet_', 'NS_', 'Speaker', 'Scene_'];
+const MANAGED_PREFIXES = [
+  "Console_",
+  "Legs_",
+  "Cabinet_",
+  "NS_",
+  "Speaker",
+  "Scene_",
+];
 
 function isManagedMeshName(name) {
   return MANAGED_PREFIXES.some((prefix) => name.startsWith(prefix));
@@ -94,14 +105,15 @@ function isManagedMeshName(name) {
 // "Plane.020_1", ...) — so the managed part name lives on the parent, not the mesh.
 function getPartName(mesh) {
   if (isManagedMeshName(mesh.name)) return mesh.name;
-  if (mesh.parent && isManagedMeshName(mesh.parent.name)) return mesh.parent.name;
+  if (mesh.parent && isManagedMeshName(mesh.parent.name))
+    return mesh.parent.name;
   return mesh.name;
 }
 
 // Meshes that should never cast a shadow, e.g. the glass record player
 // cover — three.js's shadow pass treats any castShadow mesh as fully
 // opaque regardless of the material's actual transparency/transmission.
-const NEVER_CASTS_SHADOW = new Set(['Recordplayer_Cover']);
+const NEVER_CASTS_SHADOW = new Set(["Recordplayer_Cover"]);
 
 // Run once right after the model loads: enables shadows on every mesh and
 // hides the material-swatch nodes (they're not part of the visible product).
@@ -122,7 +134,9 @@ export function prepareProductModel(model) {
 export function applyFixedMaterials(model, materialsByName) {
   Object.entries(FIXED_MATERIAL_BY_MESH).forEach(([meshName, materialName]) => {
     if (!materialsByName.has(materialName)) {
-      console.warn(`[ProductModel] material "${materialName}" not found for mesh "${meshName}"`);
+      console.warn(
+        `[ProductModel] material "${materialName}" not found for mesh "${meshName}"`,
+      );
       return;
     }
 
@@ -154,9 +168,44 @@ export function applyConfiguratorSelection(model, selected, materialsByName) {
     if (materialsByName.has(materialName)) {
       child.material = materialsByName.get(materialName);
     } else {
-      console.warn(`[ProductModel] material "${materialName}" not found for mesh "${partName}"`);
+      console.warn(
+        `[ProductModel] material "${materialName}" not found for mesh "${partName}"`,
+      );
     }
   });
+}
+
+export function getZoomAnchorMeshes(model) {
+  const anchors = {
+    legs: null,
+    speaker: null,
+    texture: null,
+  };
+
+  model.traverse((child) => {
+    if (!child.isMesh || !child.visible) return;
+
+    const partName = getPartName(child);
+
+    if (!anchors.legs && partName.startsWith("Legs_")) {
+      anchors.legs = child;
+    }
+
+    if (!anchors.speaker && partName.startsWith("Speaker")) {
+      anchors.speaker = child;
+    }
+
+    if (
+      !anchors.texture &&
+      (partName.startsWith("Cabinet_") ||
+        partName.startsWith("Console_") ||
+        partName.startsWith("NS_"))
+    ) {
+      anchors.texture = child;
+    }
+  });
+
+  return anchors;
 }
 
 // Returns the bounding box of all visible meshes in the model, ignoring
@@ -169,7 +218,7 @@ export function getProductBounds(model) {
     if (
       child.isMesh &&
       child.visible &&
-      !child.name.startsWith('Scene_') &&
+      !child.name.startsWith("Scene_") &&
       !child.name.startsWith(MATERIAL_SWATCH_PREFIX)
     ) {
       bounds.expandByObject(child);

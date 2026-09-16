@@ -1,7 +1,7 @@
-import { useEffect, useRef } from 'react';
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { HDRLoader } from 'three/addons/loaders/HDRLoader.js';
+import { useEffect, useRef } from "react";
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { HDRLoader } from "three/addons/loaders/HDRLoader.js";
 import {
   loadProductModel,
   getLightColors,
@@ -11,12 +11,32 @@ import {
   applyFixedMaterials,
   applyConfiguratorSelection,
   getProductBounds,
-} from './ProductModel';
-import { collectMaterialsByName } from './materialLibrary';
-import { useConfigurator } from '../hooks/useConfigurator';
-import { useTheme } from '../hooks/useTheme';
+  getZoomAnchorMeshes,
+} from "./ProductModel";
+import { collectMaterialsByName } from "./materialLibrary";
+import { useConfigurator } from "../hooks/useConfigurator";
+import { useTheme } from "../hooks/useTheme";
+import { useZoom } from "../hooks/useZoom";
 
-const hdriUrl = '/models/studio.hdr';
+const hdriUrl = "/models/studio.hdr";
+
+function easeOutCubic(progress) {
+  return 1 - Math.pow(1 - progress, 3);
+}
+
+function getZoomAnchorPosition(target, mesh) {
+  const box = new THREE.Box3().setFromObject(mesh);
+  const center = box.getCenter(new THREE.Vector3());
+
+  if (target === "speaker") {
+    center.set(box.max.x, box.max.y, center.z);
+  } else if (target === "legs") {
+    center.set(box.min.x, box.min.y, center.z);
+  }
+  // texture: no offset — stays at the mesh's true center
+
+  return center;
+}
 
 /**
  * Main product scene: loads the configurable product model, applies
@@ -33,10 +53,36 @@ export default function Scene() {
   const cinematicCameraRef = useRef(null);
   const cinematicMixerRef = useRef(null);
   const cinematicClipsRef = useRef([]);
+
+  const zoomAnchorMeshesRef = useRef({
+    legs: null,
+    speaker: null,
+    texture: null,
+  });
+
+  const defaultCameraPositionRef = useRef(null);
+  const cameraTweenRef = useRef(null);
+
   const { selected } = useConfigurator();
   const { isDarkMode } = useTheme();
 
-  const modelSelection = { ...selected, scene: { background: isDarkMode ? 'Orange' : 'White' } };
+  const modelSelection = {
+    ...selected,
+    scene: { background: isDarkMode ? "Orange" : "White" },
+  };
+
+  const { zoomTarget, anchorPositionsRef } = useZoom();
+
+  function startCameraTween(targetPosition, target) {
+    if (!targetPosition) return;
+    cameraTweenRef.current = {
+      startPosition: null,
+      targetPosition: targetPosition.clone(),
+      target, // "legs" | "speaker" | "texture" | undefined (zoom-out)
+      startTime: performance.now(),
+      duration: 800,
+    };
+  }
 
   // Kept in a ref so this effect can stay `[]` while still reading the
   // latest selection once the model finishes loading.
@@ -44,9 +90,35 @@ export default function Scene() {
   useEffect(() => {
     selectedRef.current = modelSelection;
     if (modelRef.current && materialsByNameRef.current) {
-      applyConfiguratorSelection(modelRef.current, modelSelection, materialsByNameRef.current);
+      applyConfiguratorSelection(
+        modelRef.current,
+        modelSelection,
+        materialsByNameRef.current,
+      );
     }
   }, [selected, isDarkMode]);
+
+  const ZOOM_DISTANCE = 2; // how close the camera gets to the anchor — tune to taste
+
+  useEffect(() => {
+    if (zoomTarget) {
+      const mesh = zoomAnchorMeshesRef.current[zoomTarget];
+      if (!mesh || !defaultCameraPositionRef.current) return;
+
+      const anchorPosition = getZoomAnchorPosition(zoomTarget, mesh);
+      const direction = defaultCameraPositionRef.current
+        .clone()
+        .sub(anchorPosition)
+        .normalize();
+      const zoomPosition = anchorPosition
+        .clone()
+        .addScaledVector(direction, ZOOM_DISTANCE);
+
+      startCameraTween(zoomPosition, zoomTarget);
+    } else if (defaultCameraPositionRef.current) {
+      startCameraTween(defaultCameraPositionRef.current, null);
+    }
+  }, [zoomTarget]);
 
   useEffect(() => {
     const mount = mountRef.current;
@@ -54,7 +126,12 @@ export default function Scene() {
 
     const scene = new THREE.Scene();
 
-    const camera = new THREE.PerspectiveCamera(50, mount.clientWidth / mount.clientHeight, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(
+      50,
+      mount.clientWidth / mount.clientHeight,
+      0.1,
+      1000,
+    );
     camera.filmGauge = 36;
     camera.setFocalLength(50);
     camera.updateProjectionMatrix();
@@ -82,103 +159,117 @@ export default function Scene() {
       scene.environment = texture;
     });
 
-    loadProductModel(productModelUrl).then(({ model, lights, cameras, animations }) => {
-      if (cancelled) return;
+    loadProductModel(productModelUrl)
+      .then(({ model, lights, cameras, animations }) => {
+        prepareProductModel(model);
 
-      prepareProductModel(model);
-
-      // Baked-in camera + clips (e.g. a zoom-to-area fly-through), fetched
-      // for later use — this doesn't touch the orbit `camera`/`controls` below.
-      cinematicCameraRef.current = cameras[0] ?? null;
-      cinematicClipsRef.current = animations;
-      if (cameras.length > 0 && animations.length > 0) {
-        cinematicMixerRef.current = new THREE.AnimationMixer(model);
-      }
-
-      model.scale.set(1, 1, 1);
-      model.position.set(-0.4, 0, 0);
-      scene.add(model);
-
-      modelRef.current = model;
-
-      const materialsByName = collectMaterialsByName(model);
-      materialsByNameRef.current = materialsByName;
-
-      applyFixedMaterials(model, materialsByName);
-
-      applyConfiguratorSelection(model, selectedRef.current, materialsByName);
-
-      // Sizes the fallback lights' shadow frustum and frames the camera
-      // when the export has no baked-in camera.
-      const productBounds = getProductBounds(model);
-
-      console.log('[Scene] lights from GLB:', getLightColors(lights));
-      console.log('[Scene] cameras from GLB:', getCameraViews(cameras));
-      console.log('[Scene] animation clips from GLB:', animations.map((clip) => clip.name));
-
-      // WEBBTO3D_FINAL_TEST.glb has its own baked-in lights (KHR_lights_punctual),
-      // already added to the scene as part of `scene.add(model)` above — enable
-      // shadow casting on them so Scene_White/Orange's receiveShadow has something
-      // to receive, same as the manual fallback lights used to provide.
-      //
-      // Blender's glTF exporter writes physically-based candela values (tens of
-      // thousands here) meant for a physically-correct exposure pipeline, which
-      // blows out this scene's tone mapping/exposure — so intensities are
-      // re-tuned by hand per light, matching the values from threejs.org/editor.
-      const GLB_LIGHT_INTENSITY_BY_NAME = {
-        Scene_Light_Top: 20,
-        Scene_Light_Front: 10,
-      };
-      lights.forEach((light) => {
-        if (light.name in GLB_LIGHT_INTENSITY_BY_NAME) {
-          light.intensity = GLB_LIGHT_INTENSITY_BY_NAME[light.name];
+        // Baked-in camera + clips (e.g. a zoom-to-area fly-through), fetched
+        // for later use — this doesn't touch the orbit `camera`/`controls` below.
+        cinematicCameraRef.current = cameras[0] ?? null;
+        cinematicClipsRef.current = animations;
+        if (cameras.length > 0 && animations.length > 0) {
+          cinematicMixerRef.current = new THREE.AnimationMixer(model);
         }
 
-        if ('castShadow' in light) {
-          light.castShadow = true;
-          light.shadow.mapSize.set(2048, 2048);
-          light.shadow.bias = -0.0015;
+        model.scale.set(1, 1, 1);
+        model.position.set(-0.5, 0.1, 0);
+        scene.add(model);
+
+        modelRef.current = model;
+
+        const materialsByName = collectMaterialsByName(model);
+        materialsByNameRef.current = materialsByName;
+
+        applyFixedMaterials(model, materialsByName);
+
+        applyConfiguratorSelection(model, selectedRef.current, materialsByName);
+        zoomAnchorMeshesRef.current = getZoomAnchorMeshes(model);
+
+        // Sizes the fallback lights' shadow frustum and frames the camera
+        // when the export has no baked-in camera.
+        const productBounds = getProductBounds(model);
+
+        console.log("[Scene] lights from GLB:", getLightColors(lights));
+        console.log("[Scene] cameras from GLB:", getCameraViews(cameras));
+        console.log(
+          "[Scene] animation clips from GLB:",
+          animations.map((clip) => clip.name),
+        );
+
+        // WEBBTO3D_FINAL_TEST.glb has its own baked-in lights (KHR_lights_punctual),
+        // already added to the scene as part of `scene.add(model)` above — enable
+        // shadow casting on them so Scene_White/Orange's receiveShadow has something
+        // to receive, same as the manual fallback lights used to provide.
+        //
+        // Blender's glTF exporter writes physically-based candela values (tens of
+        // thousands here) meant for a physically-correct exposure pipeline, which
+        // blows out this scene's tone mapping/exposure — so intensities are
+        // re-tuned by hand per light, matching the values from threejs.org/editor.
+        const GLB_LIGHT_INTENSITY_BY_NAME = {
+          Scene_Light_Top: 20,
+          Scene_Light_Front: 10,
+        };
+        lights.forEach((light) => {
+          if (light.name in GLB_LIGHT_INTENSITY_BY_NAME) {
+            light.intensity = GLB_LIGHT_INTENSITY_BY_NAME[light.name];
+          }
+
+          if ("castShadow" in light) {
+            light.castShadow = true;
+            light.shadow.mapSize.set(2048, 2048);
+            light.shadow.bias = -0.0015;
+          }
+        });
+
+        if (cameras.length > 0) {
+          // Use the first exported camera's framing as the starting view.
+          camera.position.copy(cameras[0].position);
+          camera.quaternion.copy(cameras[0].quaternion);
+          // Baked camera has no orbit target — without this, orbiting pivots
+          // around the origin instead of the product.
+          if (!productBounds.isEmpty()) {
+            controls.target.copy(productBounds.getCenter(new THREE.Vector3()));
+            controls.update();
+          }
+        } else {
+          // No baked camera — frame on the product's bounding box instead.
+          if (!productBounds.isEmpty()) {
+            const center = productBounds.getCenter(new THREE.Vector3());
+            const boxSize = productBounds.getSize(new THREE.Vector3());
+            const maxDim = Math.max(boxSize.x, boxSize.y, boxSize.z);
+            const fitDistance =
+              maxDim / 2 / Math.tan((camera.fov * Math.PI) / 360);
+
+            camera.near = fitDistance / 100;
+            camera.far = fitDistance * 100;
+            camera.position.set(
+              center.x,
+              center.y,
+              center.z + fitDistance * 1.4,
+            );
+            camera.updateProjectionMatrix();
+
+            controls.target.copy(center);
+            controls.update();
+          }
         }
+
+        // Start fully tilted down (maxPolarAngle) instead of the artist's
+        // camera angle, so every reload begins at the same view.
+        const offset = camera.position.clone().sub(controls.target);
+        const spherical = new THREE.Spherical().setFromVector3(offset);
+        spherical.phi = controls.maxPolarAngle;
+        camera.position
+          .copy(controls.target)
+          .add(new THREE.Vector3().setFromSpherical(spherical));
+        controls.update();
+
+        // Remember this as the "zoomed out" / default view to tween back to
+        defaultCameraPositionRef.current = camera.position.clone();
+      })
+      .catch((error) => {
+        console.error("[Scene]", error);
       });
-
-      if (cameras.length > 0) {
-        // Use the first exported camera's framing as the starting view.
-        camera.position.copy(cameras[0].position);
-        camera.quaternion.copy(cameras[0].quaternion);
-        // Baked camera has no orbit target — without this, orbiting pivots
-        // around the origin instead of the product.
-        if (!productBounds.isEmpty()) {
-          controls.target.copy(productBounds.getCenter(new THREE.Vector3()));
-          controls.update();
-        }
-      } else {
-        // No baked camera — frame on the product's bounding box instead.
-        if (!productBounds.isEmpty()) {
-          const center = productBounds.getCenter(new THREE.Vector3());
-          const boxSize = productBounds.getSize(new THREE.Vector3());
-          const maxDim = Math.max(boxSize.x, boxSize.y, boxSize.z);
-          const fitDistance = (maxDim / 2) / Math.tan((camera.fov * Math.PI) / 360);
-
-          camera.near = fitDistance / 100;
-          camera.far = fitDistance * 100;
-          camera.position.set(center.x, center.y, center.z + fitDistance * 1.4);
-          camera.updateProjectionMatrix();
-
-          controls.target.copy(center);
-          controls.update();
-        }
-      }
-
-      // Start fully tilted down (maxPolarAngle) instead of the artist's
-      // camera angle, so every reload begins at the same view.
-      const offset = camera.position.clone().sub(controls.target);
-      const spherical = new THREE.Spherical().setFromVector3(offset);
-      spherical.phi = controls.maxPolarAngle;
-      camera.position.copy(controls.target).add(new THREE.Vector3().setFromSpherical(spherical));
-      controls.update();
-    }).catch((error) => {
-      console.error('[Scene]', error);
-    });
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
@@ -194,13 +285,75 @@ export default function Scene() {
 
     const timer = new THREE.Timer();
     let frameId;
+
     const animate = (timestamp) => {
       frameId = requestAnimationFrame(animate);
       timer.update(timestamp);
-      cinematicMixerRef.current?.update(timer.getDelta());
-      controls.update();
+      const delta = timer.getDelta();
+
+      cinematicMixerRef.current?.update(delta);
+
+      if (cameraTweenRef.current) {
+        const tween = cameraTweenRef.current;
+
+        if (!tween.startPosition) {
+          tween.startPosition = camera.position.clone();
+        }
+
+        const elapsed = performance.now() - tween.startTime;
+        const progress = Math.min(elapsed / tween.duration, 1);
+        const eased = easeOutCubic(progress);
+
+        camera.position.lerpVectors(
+          tween.startPosition,
+          tween.targetPosition,
+          eased,
+        );
+
+        const lookAtTarget =
+          tween.target && zoomAnchorMeshesRef.current[tween.target]
+            ? getZoomAnchorPosition(
+                tween.target,
+                zoomAnchorMeshesRef.current[tween.target],
+              )
+            : controls.target;
+
+        camera.lookAt(lookAtTarget);
+
+        if (progress >= 1) {
+          camera.position.copy(tween.targetPosition);
+          camera.lookAt(lookAtTarget);
+          cameraTweenRef.current = null;
+        }
+      }
+
+      const width = mount.clientWidth;
+      const height = mount.clientHeight;
+
+      for (const target of ["legs", "speaker", "texture"]) {
+        const mesh = zoomAnchorMeshesRef.current[target];
+
+        if (!mesh) {
+          anchorPositionsRef.current[target] = { x: 0, y: 0, visible: false };
+          continue;
+        }
+
+        const anchorPosition = getZoomAnchorPosition(target, mesh); // ← delad funktion
+        anchorPosition.project(camera);
+
+        const x = (anchorPosition.x * 0.5 + 0.5) * width;
+        const y = (-anchorPosition.y * 0.5 + 0.5) * height;
+
+        anchorPositionsRef.current[target] = {
+          x,
+          y,
+          visible: anchorPosition.z >= -1 && anchorPosition.z <= 1,
+        };
+      }
+
       renderer.render(scene, camera);
     };
+
     animate();
 
     const handleResize = () => {
@@ -208,13 +361,13 @@ export default function Scene() {
       camera.updateProjectionMatrix();
       renderer.setSize(mount.clientWidth, mount.clientHeight);
     };
-    window.addEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
 
     return () => {
       cancelled = true;
       modelRef.current = null;
       cancelAnimationFrame(frameId);
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
       controls.dispose();
       renderer.dispose();
       mount.removeChild(renderer.domElement);
@@ -222,8 +375,8 @@ export default function Scene() {
   }, []);
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100vh' }}>
-      <div ref={mountRef} style={{ width: '100%', height: '100%' }} />
+    <div style={{ position: "relative", width: "100%", height: "100vh" }}>
+      <div ref={mountRef} style={{ width: "100%", height: "100%" }} />
     </div>
   );
 }

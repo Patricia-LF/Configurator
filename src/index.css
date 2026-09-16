@@ -9,7 +9,7 @@
   /*Dark mode*/
   --text: #ffdbc6;
   --border: #ffdbc6;
-  --card-bg: rgba(43, 21, 12, 0.4);
+  --card-bg: rgba(43, 21, 12, 0.6);
   --button-bg: rgba(255, 219, 198, 0.2);
   --clash-font: "ClashDisplay";
 
@@ -30,7 +30,7 @@
   --text: #2b150c;
   --border: #2b150c;
   --card-bg: rgba(255, 234, 225, 0.4);
-  --button-bg: rgba(255, 219, 198, 0.24);
+  --button-bg: rgba(43, 21, 12, 0.1);
 }
 
 html,
