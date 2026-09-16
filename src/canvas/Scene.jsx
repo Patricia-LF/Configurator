@@ -44,8 +44,10 @@ function getZoomAnchorPosition(target, mesh) {
 // default -> close-up, played forward to enter and backward to leave.
 const CAMERA_ACTION_FPS = 24;
 const TURNTABLE_CLIP_FRAME_RANGE = [35, 105];
-// Shifts the close-up framing left along world X, ramped in so the start stays unshifted.
-const TURNTABLE_CAMERA_OFFSET = new THREE.Vector3(-0.3, 0, 0);
+// Shifts the close-up framing left (world X), back toward the product
+// (world Z), and up (world Y) for more of an overhead look down onto the
+// vinyl player, ramped in so the start stays unshifted.
+const TURNTABLE_CAMERA_OFFSET = new THREE.Vector3(-0.4, 0.15, 0.15);
 
 // Shifts a clip's position track by `offset`, weighted by each keyframe's
 // progress (0 at start, 1 at end) along the baked start->end path.

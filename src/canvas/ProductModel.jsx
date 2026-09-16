@@ -4,10 +4,10 @@ import { getModelState } from "../config/configuratorRules";
 import { FIXED_MATERIAL_BY_MESH } from "../config/productOptions";
 
 export const productModelUrl = "/models/3DTOWEBB_FINAL_TEST_UPDATE.glb";
-// This older export still carries the baked-in "Main_Camera" node + its
-// animation clips (used for the turntable fly-through) — productModelUrl's
-// export doesn't include them.
-export const cameraModelUrl = "/models/3DTOWEBB_FINAL_TEST_CAM_ANIM.glb";
+// This separate export carries the baked-in "Camera" node + its animation
+// clip (used for the turntable fly-through) — productModelUrl's export
+// doesn't include them.
+export const cameraModelUrl = "/models/3DTOWEBB_CAMERA.glb";
 
 /**
  * Loads the product GLB: the mesh hierarchy, any KHR_lights_punctual
