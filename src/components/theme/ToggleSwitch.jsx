@@ -1,7 +1,7 @@
 // ToggleSwitch.jsx
 import styles from "./ToggleSwitch.module.css";
-import toggleIconDark from "../../assets/icons/toggle-icon-dark.png";
-import toggleIconLight from "../../assets/icons/toggle-icon-light.png";
+import toggleIconDark from "../../assets/icons/star-light.svg";
+import toggleIconLight from "../../assets/icons/star-orange.svg";
 
 export default function ToggleSwitch({
   label,

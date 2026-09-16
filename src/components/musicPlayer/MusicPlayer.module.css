@@ -79,6 +79,7 @@
   height: 39.017px;
   aspect-ratio: 1/1;
   cursor: pointer;
+  border-radius: 50%;
 }
 
 .playing,

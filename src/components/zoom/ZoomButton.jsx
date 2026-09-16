@@ -1,19 +1,16 @@
 import { useEffect, useRef } from "react";
 import styles from "./ZoomButton.module.css";
 import { useZoom } from "../../hooks/useZoom";
-import { useTheme } from "../../hooks/useTheme";
-import zoomBtnLight from "../../assets/icons/zoom-btn-light.png";
-import zoomBtnDark from "../../assets/icons/zoom-btn.png";
-import zoomOutBtnLight from "../../assets/icons/zoomOut-btn-light.png";
-import zoomOutBtnDark from "../../assets/icons/zoomOut-btn.png";
+import zoomBtn from "../../assets/icons/zoom-btn.svg";
+import zoomOutBtn from "../../assets/icons/zoomOut-btn.svg";
 
 export default function ZoomButton({ target }) {
   const { zoomTarget, triggerZoom, anchorPositionsRef } = useZoom();
-  const { isDarkMode } = useTheme();
 
   const buttonRef = useRef(null);
 
   const isActive = zoomTarget === target;
+  const zoomIcon = isActive ? zoomOutBtn : zoomBtn;
 
   useEffect(() => {
     let frameId;
@@ -39,14 +36,6 @@ export default function ZoomButton({ target }) {
 
     return () => cancelAnimationFrame(frameId);
   }, [target, anchorPositionsRef]);
-
-  const zoomIcon = isActive
-    ? isDarkMode
-      ? zoomOutBtnDark
-      : zoomOutBtnLight
-    : isDarkMode
-      ? zoomBtnDark
-      : zoomBtnLight;
 
   return (
     <button
