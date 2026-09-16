@@ -1,0 +1,127 @@
+/* OptionButton.module.css */
+.container {
+  display: flex;
+  width: 318px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.label {
+  color: var(--text);
+  font-family: var(--clash-font);
+  font-size: 20px;
+  line-height: normal;
+}
+
+.buttonGroup {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  align-self: stretch;
+  flex-wrap: wrap;
+}
+
+.optionWrapper {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Shared across ALL button types - same border everywhere */
+.option {
+  border: 1px solid var(--border);
+  cursor: pointer;
+}
+
+/* Plain text buttons: Size, Surface, Speaker, Grille */
+.textOption {
+  padding: 8px 16px;
+  min-width: 150px;
+  white-space: nowrap;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  background: none;
+  color: var(--text);
+  font-family: var(--clash-font);
+  font-size: 16px;
+  line-height: normal;
+}
+
+.textOption:hover {
+  background: var(--button-bg);
+}
+
+/* Swatch buttons - material/color, shown as background image or hex color */
+.swatch {
+  border-radius: 12px;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  display: flex;
+  height: 36px;
+  width: 96.6px;
+  padding: 8px 0;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  align-self: stretch;
+  border-radius: 999px;
+}
+
+.swatch:hover {
+  box-shadow: 0px 0px 2px 2px var(--border);
+}
+
+.compact {
+  min-width: 90px;
+  padding: 8px 10px;
+}
+
+.optionValue {
+  color: var(--text);
+  font-family: var(--clash-font);
+  font-size: 16px;
+  line-height: normal;
+}
+
+.default {
+  border: 3px solid var(--border);
+  background: none;
+  outline: 1px solid var(--border);
+  outline-offset: 2px;
+}
+
+/* Active state for plain text buttons */
+.textOption.active {
+  border: 3px solid var(--border);
+  background: var(--button-bg);
+  outline: 1px solid var(--border);
+  outline-offset: 2px;
+}
+
+/* Active state for swatches: should NOT cover the background image/color */
+.swatch.active {
+  border: 3px solid var(--border);
+  opacity: 1;
+  outline: 1px solid var(--border);
+  outline-offset: 2px;
+}
+
+.inactive {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.disabledMessage {
+  color: var(--text);
+  font-family: var(--clash-font);
+  font-size: 13px;
+  opacity: 0.7;
+  margin: 4px 0 0 0;
+}

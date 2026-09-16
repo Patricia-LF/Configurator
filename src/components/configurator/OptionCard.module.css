@@ -1,0 +1,38 @@
+.optionCard {
+  display: flex;
+  width: 400px;
+  padding: 32px 12px;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  align-self: stretch;
+  border-radius: 32px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  margin-bottom: 20px;
+}
+
+.cardInfo {
+  display: flex;
+  padding: 0 26px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 32px;
+  align-self: stretch;
+}
+
+.titleContainer {
+  display: flex;
+  height: 64px;
+  padding-right: 229px;
+  align-items: center;
+  align-self: stretch;
+}
+
+.title {
+  color: var(--text);
+  font-family: var(--clash-font);
+  font-size: 64px;
+  text-transform: capitalize;
+  line-height: 100%; /* 64px */
+}

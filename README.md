@@ -52,41 +52,58 @@ npm run preview
 ```
 project-root/
 ├── public/
-│   └── models/                  # .glb/.gltf files — served as-is, no bundling
-│       └── product.glb
+│   ├── album-images/                # album cover images used by VinylCoverflow
+│   ├── models/                      # .glb 3D model file(s) - named groups inside (Body, Legs, Speaker, VinylPlayer)
+│   └── textures/                    # material/wood swatch images used as button backgrounds
 │
 ├── src/
 │   ├── App.jsx
 │   ├── main.jsx
+│   ├── index.css                    # global styles, CSS theme variables (--text, --bg, --border, --card-bg, --clash-font)
 │   │
-│   ├── canvas/                   # everything that lives inside <Canvas>
-│   │   ├── Scene.jsx              # lights, camera, environment
-│   │   ├── models/
-│   │   │   ├── ProductModel.jsx   # main configurable 3D object
-│   │   │   └── parts/              # only needed if the model is split into swappable meshes
-│   │   │       ├── Body.jsx
-│   │   │       └── Wheels.jsx
-│   │   └── effects/                # optional — skip until core features work
-│   │       └── PostProcessing.jsx
+│   ├── assets/
+│   │   └── icons/                   # small bundled assets (menu, player, toggle icons)
 │   │
-│   ├── config/                    # configuration logic
-│   │   ├── configuratorSchema.js   # defines what CAN be configured (options, materials)
-│   │   ├── configuratorState.js    # current SELECTED state — Context/useState first
-│   │   └── configuratorRules.js    # optional: dependencies/constraints between options
+│   ├── canvas/
+│   │   ├── Scene.jsx                # raw three.js scene setup (camera, renderer, lights, OrbitControls)
+│   │   └── ProductModel.jsx         # loads the .glb, exposes loadProductModel/getLightColors/getCameraViews
 │   │
-│   ├── ui/                         # 2D UI outside the canvas
-│   │   ├── OptionPanel.jsx
-│   │   ├── ColorPicker.jsx
-│   │   └── SummaryPanel.jsx
+│   ├── components/
+│   │   ├── configurator/
+│   │   │   ├── ConfiguratorPanel.jsx        # step-by-step card flow, position: fixed, reads productOptions + selected state
+│   │   │   ├── ConfiguratorPanel.module.css
+│   │   │   ├── OptionCard.jsx               # wraps each configurable part in its own card
+│   │   │   ├── OptionCard.module.css
+│   │   │   ├── OptionButton.jsx             # renders either plain text pills or material/color swatches
+│   │   │   └── OptionButton.module.css
+│   │   │
+│   │   ├── musicPlayer/
+│   │   │   ├── MusicPlayer.jsx              # floating play/pause/switch player, position: fixed
+│   │   │   ├── MusicPlayer.module.css
+│   │   │   ├── VinylCoverflow.jsx           # scrollable album disk selector, position: fixed
+│   │   │   └── VinylCoverflow.module.css
+│   │   │
+│   │   └── theme/
+│   │       ├── ToggleSwitch.jsx             # dark/light mode slider toggle, position: fixed
+│   │       └── ToggleSwitch.module.css
 │   │
-│   ├── hooks/
-│   │   └── useConfigurator.js      # hook exposing config state + setters to components
+│   ├── config/
+│   │   ├── productOptions.js         # defines available parameters/options per part (with backgrounds for swatches)
+│   │   ├── ConfiguratorContext.jsx   # Context + Provider holding the currently SELECTED configurator state
+│   │   ├── configuratorRules.js      # cross-part logic (leg material follows cabinet wood, speaker availability by size)
+│   │   └── ThemeContext.jsx          # Context + Provider holding isDarkMode + toggleTheme
 │   │
-│   └── assets/                     # only small bundled assets (icons, fonts, small textures)
+│   └── hooks/
+│       ├── useConfigurator.js        # convenience hook wrapping ConfiguratorContext
+│       └── useTheme.js               # convenience hook wrapping ThemeContext
 │
 ├── index.html
+├── eslint.config.js
 ├── vite.config.js
-└── package.json
+├── package.json
+├── package-lock.json
+├── LICENSE
+└── .gitignore
 
 ```
 
@@ -94,41 +111,6 @@ project-root/
 
 - **Port already in use** — Vite automatically picks the next available port if `5173` is taken; check the terminal output for the correct URL.
 - **`npm install` fails** — make sure you're running a recent enough Node.js version (`node -v`).
-
-## Project structure
-
-```
-src/
-├── App.jsx
-├── main.jsx
-│
-├── canvas/                    # everything that lives inside <Canvas>
-│   ├── Scene.jsx               # top-level scene: lights, camera, environment
-│   ├── models/
-│   │   ├── ProductModel.jsx    # the main configurable 3D object
-│   │   └── parts/               # if the model is split into swappable parts
-│   │       ├── Body.jsx
-│   │       └── Wheels.jsx
-│   └── effects/
-│       └── PostProcessing.jsx
-│
-├── config/                    # ← THE CONFIGURATION LOGIC LIVES HERE
-│   ├── configuratorSchema.js   # defines what CAN be configured (options, materials, prices)
-│   ├── configuratorStore.js    # Zustand store: current SELECTED state
-│   └── configuratorRules.js    # optional: dependencies/constraints between options
-│
-├── ui/                         # 2D UI outside the canvas
-│   ├── OptionPanel.jsx
-│   ├── ColorPicker.jsx
-│   └── SummaryPanel.jsx
-│
-├── hooks/
-│   └── useConfigurator.js      # convenience hook wrapping the store
-│
-└── assets/
-    ├── models/                 # .glb/.gltf files
-    └── textures/
-```
 
 ## Team
 

@@ -1,0 +1,11 @@
+/*ZoomButton.module.css*/
+.zoomBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  position: fixed;
+  top: 0;
+  left: 0;
+  transform-origin: center;
+  z-index: 20;
+}

@@ -1,0 +1,62 @@
+.container {
+  position: relative;
+  font-size: 24px;
+  font-family: var(--clash-font);
+  color: var(--text);
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.total {
+  font-size: 24px;
+}
+
+.sek {
+  font-size: 16px;
+}
+
+.priceChange {
+  position: absolute;
+  font-size: 16px;
+  color: var(--text);
+  font-style: normal;
+  font-weight: 300;
+  line-height: normal;
+  animation: priceChange 0.8s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes priceChange {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  20% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  40% {
+    opacity: 1;
+    transform: translateY(-6);
+  }
+
+  60% {
+    opacity: 1;
+    transform: translateY(-12);
+  }
+
+  80% {
+    opacity: 1;
+    transform: translateY(-24);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+}
