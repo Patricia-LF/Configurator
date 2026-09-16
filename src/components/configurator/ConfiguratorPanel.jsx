@@ -118,6 +118,8 @@ function ConfiguratorPanel() {
                     label={param.label}
                     options={options}
                     value={selected[partKey][paramKey]}
+                    defaultValue={param.default}
+                    touched={touchedParams[partKey]?.has(paramKey) ?? false}
                     onChange={(value) =>
                       handleOptionChange(partKey, paramKey, value)
                     }
