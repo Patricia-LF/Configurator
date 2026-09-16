@@ -44,8 +44,10 @@ function getZoomAnchorPosition(target, mesh) {
 // default -> close-up, played forward to enter and backward to leave.
 const CAMERA_ACTION_FPS = 24;
 const TURNTABLE_CLIP_FRAME_RANGE = [35, 105];
-// Shifts the close-up framing left along world X, ramped in so the start stays unshifted.
-const TURNTABLE_CAMERA_OFFSET = new THREE.Vector3(-0.3, 0, 0);
+// Shifts the close-up framing left (world X), back toward the product
+// (world Z), and up (world Y) for more of an overhead look down onto the
+// vinyl player, ramped in so the start stays unshifted.
+const TURNTABLE_CAMERA_OFFSET = new THREE.Vector3(-0.4, 0.15, 0.15);
 
 // Shifts a clip's position track by `offset`, weighted by each keyframe's
 // progress (0 at start, 1 at end) along the baked start->end path.
@@ -231,9 +233,11 @@ export default function Scene() {
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(mount.clientWidth, mount.clientHeight);
     renderer.shadowMap.enabled = true;
-    // PointLights (the GLB's baked-in lights) don't support VSMShadowMap;
-    // PCFShadowMap is the compatible option.
-    renderer.shadowMap.type = THREE.PCFShadowMap;
+    // The GLB's baked-in lights are PointLights (no VSMShadowMap support)
+    // and don't cast shadows themselves (see the dedicated key light below,
+    // a DirectionalLight) — VSMShadowMap gives it a real, smooth blur
+    // instead of PCFSoftShadowMap's noisy few-sample dithering.
+    renderer.shadowMap.type = THREE.VSMShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     // Dialed down to avoid clipping bright materials (env + key + fill lights stack up).
     renderer.toneMappingExposure = 0.6;
@@ -275,6 +279,18 @@ export default function Scene() {
         const materialsByName = collectMaterialsByName(model);
         materialsByNameRef.current = materialsByName;
 
+        // Legs_Silver is a copy of the same metallic material as Recordplayer_Metallic_Parts, 
+        // so it can be swapped in for the legs without affecting the rest of the product.
+        const recordPlayerMetal = materialsByName.get("Recordplayer_Metallic_Parts");
+        if (recordPlayerMetal) {
+          materialsByName.set("Legs_Silver", recordPlayerMetal);
+
+          // Legs_Gold is a copy of the same metallic material, but with a gold tint.
+          const goldMetal = recordPlayerMetal.clone();
+          goldMetal.color.setRGB(0.76, 0.59, 0.30);
+          materialsByName.set("Legs_Gold", goldMetal);
+        }
+
         applyFixedMaterials(model, materialsByName);
 
         applyConfiguratorSelection(model, selectedRef.current, materialsByName);
@@ -295,13 +311,13 @@ export default function Scene() {
           cinematic.animations.map((clip) => clip.name),
         );
 
-        // GLB lights are already in the scene; enable shadow casting so
-        // Scene_White/Orange's receiveShadow has something to receive.
-        // Blender exports physically-based candela values that blow out this
-        // scene's tone mapping, so intensities are re-tuned by hand per light.
+        // GLB lights are illumination only now — see the dedicated key
+        // light below for the actual shadow. Blender exports
+        // physically-based candela values that blow out this scene's tone
+        // mapping, so intensities are re-tuned by hand per light.
         const GLB_LIGHT_INTENSITY_BY_NAME = {
           Scene_Light_Top: 20,
-          Scene_Light_Front: 10,
+          Scene_Light_Front: 15,
         };
         lights.forEach((light) => {
           if (light.name in GLB_LIGHT_INTENSITY_BY_NAME) {
@@ -309,11 +325,48 @@ export default function Scene() {
           }
 
           if ("castShadow" in light) {
-            light.castShadow = true;
-            light.shadow.mapSize.set(2048, 2048);
-            light.shadow.bias = -0.0015;
+            light.castShadow = false;
           }
         });
+
+        // Standard shadow-casting key light: a DirectionalLight aimed at
+        // the product, with its orthographic shadow camera frustum fit
+        // tightly to the product's bounds (padded) so the shadow map's
+        // resolution isn't wasted on empty space.
+        const boundsCenter = productBounds.getCenter(new THREE.Vector3());
+        const boundsSize = productBounds.getSize(new THREE.Vector3());
+        const maxDim = Math.max(boundsSize.x, boundsSize.y, boundsSize.z);
+
+        const keyLight = new THREE.DirectionalLight(0xffffff, 2);
+        keyLight.position.set(
+          boundsCenter.x + maxDim * 0.6,
+          boundsCenter.y + maxDim * 1.5,
+          boundsCenter.z + maxDim * 1.2,
+        );
+        keyLight.target.position.copy(boundsCenter);
+        scene.add(keyLight, keyLight.target);
+
+        keyLight.castShadow = true;
+        keyLight.shadow.mapSize.set(4096, 4096);
+        keyLight.shadow.bias = -0.0015;
+        // The shadow's blur radius is in world units, not texels — bigger = softer.
+        keyLight.shadow.radius = 10;
+        keyLight.shadow.blurSamples = 16;
+        // >1 darkens the shadowed area beyond this light's own occlusion —
+        // the env/HDRI fill light was making it read as too faint.
+        keyLight.shadow.intensity = 1.8;
+
+        // The shadow camera's frustum is orthographic, so it needs to be sized
+        // to the product's bounding box (padded) instead of using near/far.
+        const frustumPadding = maxDim * 3;
+        const shadowCam = keyLight.shadow.camera;
+        shadowCam.left = -maxDim / 2 - frustumPadding;
+        shadowCam.right = maxDim / 2 + frustumPadding;
+        shadowCam.top = maxDim / 2 + frustumPadding;
+        shadowCam.bottom = -maxDim / 2 - frustumPadding;
+        shadowCam.near = 0.1;
+        shadowCam.far = maxDim * 6;
+        shadowCam.updateProjectionMatrix();
 
         if (cameras.length > 0) {
           // Use the first exported camera's framing as the starting view.
@@ -346,11 +399,13 @@ export default function Scene() {
           }
         }
 
-        // Start fully tilted down (maxPolarAngle) instead of the artist's
-        // camera angle, so every reload begins at the same view.
+        // Start fully tilted down (maxPolarAngle) and fully zoomed out
+        // (maxDistance) instead of the artist's camera angle/distance, so
+        // every reload begins at the same, most-zoomed-out view.
         const offset = camera.position.clone().sub(controls.target);
         const spherical = new THREE.Spherical().setFromVector3(offset);
         spherical.phi = controls.maxPolarAngle;
+        spherical.radius = controls.maxDistance;
         camera.position
           .copy(controls.target)
           .add(new THREE.Vector3().setFromSpherical(spherical));
@@ -400,10 +455,13 @@ export default function Scene() {
     controls.enableZoom = true;
     // Disables two-finger/right-click panning; only orbiting is wanted here.
     controls.enablePan = false;
-    // Keeps the camera off the floor/backdrop rear; tuned to the ~4-unit default distance.
-    controls.minDistance = 2.5;
-    controls.maxDistance = 5.5;
-    controls.minPolarAngle = 0.3;
+    // The minDistance is set to a value that keeps the camera from going inside the product.
+    controls.minDistance = ZOOM_DISTANCE;
+    // The maxDistance is set to a value that allows the camera to orbit around the product without going too far away.
+    controls.maxDistance = 4.9;
+    // Polar angle is measured from straight up, so raising this floor is
+    // what limits how far the camera can swing above the product.
+    controls.minPolarAngle = 0.9;
     controls.maxPolarAngle = Math.PI / 2 - 0.05;
     controls.minAzimuthAngle = -Math.PI / 12;
     controls.maxAzimuthAngle = Math.PI / 12;
