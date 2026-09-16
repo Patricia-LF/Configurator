@@ -39,7 +39,8 @@ export default function TotalPrice() {
       )}
 
       <div className={styles.total}>
-        {totalPrice.toLocaleString("sv-SE")} SEK
+        {totalPrice.toLocaleString("sv-SE")}{" "}
+        <span className={styles.sek}>SEK</span>
       </div>
     </div>
   );
