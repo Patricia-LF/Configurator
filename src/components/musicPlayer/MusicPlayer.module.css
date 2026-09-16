@@ -86,3 +86,9 @@
   background: none;
   border: none;
 }
+
+.play-btn:hover,
+.pause-btn:hover,
+.next:hover {
+  background: var(--button-bg);
+}
