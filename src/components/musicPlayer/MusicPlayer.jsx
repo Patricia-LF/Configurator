@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import ReactPlayer from "react-player";
 import styles from "./MusicPlayer.module.css";
-import recordIcon from "../../assets/icons/vinyl.png";
+import recordIcon from "../../assets/icons/vinyl_2.webp";
 import { useTheme } from "../../hooks/useTheme";
 
 // Icon names refer to the THEME they're shown in, not their own color —
@@ -16,26 +16,31 @@ import playBtnLight from "../../assets/icons/play-btn-light.svg";
 // Example of an album with tracks - same albums as VinylCoverFlow in App.jsx
 const album = [
   {
+    id: "sultans-of-swing",
     artist: "Dire Straits",
     title: "Sultans Of Swing",
     url: "https://soundhelix.com",
   },
   {
+    id: "hey-jude",
     artist: "The Beatles",
     title: "Hey Jude",
     url: "https://soundhelix.com",
   },
   {
+    id: "big-in-japan",
     artist: "Alphaville",
     title: "Big In Japan",
     url: "https://soundhelix.com",
   },
   {
+    id: "little-lies",
     artist: "Fleetwood Mac",
     title: "Little Lies",
     url: "https://soundhelix.com",
   },
   {
+    id: "another-brick-in-the-wall",
     artist: "Pink Floyd",
     title: "Another Brick In The Wall",
     url: "https://soundhelix.com",
@@ -58,6 +63,13 @@ export default function MusicPlayer({ start = false, disk = null, onBack }) {
     const frame = requestAnimationFrame(() => setStage("risen"));
     return () => cancelAnimationFrame(frame);
   }, [start]);
+
+  // Keep the displayed song in sync with whichever vinyl was picked
+  useEffect(() => {
+    if (!disk) return;
+    const index = album.findIndex((song) => song.id === disk.id);
+    if (index !== -1) setCurrentSongIndex(index);
+  }, [disk]);
 
   const handleRecordTransitionEnd = (event) => {
     if (stage === "risen" && event.propertyName === "transform") {
