@@ -1,6 +1,6 @@
 @font-face {
   font-family: "ClashDisplay";
-  src: url(fonts/ClashDisplay-Variable.ttf);
+  src: url("../fonts/ClashDisplay-Variable.ttf");
   font-style: normal;
   font-weight: 400;
 }
