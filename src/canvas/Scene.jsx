@@ -4,9 +4,11 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { HDRLoader } from "three/addons/loaders/HDRLoader.js";
 import {
   loadProductModel,
+  loadCameraAnimation,
   getLightColors,
   getCameraViews,
   productModelUrl,
+  cameraModelUrl,
   prepareProductModel,
   applyFixedMaterials,
   applyConfiguratorSelection,
@@ -48,7 +50,7 @@ const TURNTABLE_CAMERA_OFFSET = new THREE.Vector3(-0.3, 0, 0);
 // Shifts a clip's position track by `offset`, weighted by each keyframe's
 // progress (0 at start, 1 at end) along the baked start->end path.
 function offsetPositionTrack(clip, offset, weightForProgress) {
-  const track = clip.tracks.find((t) => t.name.endsWith('.position'));
+  const track = clip.tracks.find((t) => t.name.endsWith(".position"));
   if (!track) return;
 
   const { values } = track;
@@ -65,9 +67,10 @@ function offsetPositionTrack(clip, offset, weightForProgress) {
     const idx = i * 3;
     current.fromArray(values, idx);
 
-    const progress = pathLengthSq === 0
-      ? 0
-      : THREE.MathUtils.clamp(current.sub(start).dot(path) / pathLengthSq, 0, 1);
+    const progress =
+      pathLengthSq === 0
+        ? 0
+        : THREE.MathUtils.clamp(current.sub(start).dot(path) / pathLengthSq, 0, 1);
     const weight = weightForProgress(progress);
 
     values[idx] += offset.x * weight;
@@ -79,9 +82,9 @@ function offsetPositionTrack(clip, offset, weightForProgress) {
 // Blends a clip's position+quaternion tracks toward a pose, weighted by
 // progress (see offsetPositionTrack) — 0 keeps the baked value, 1 replaces it.
 function blendTrackTowardPose(clip, targetPosition, targetQuaternion, weightForProgress) {
-  const posTrack = clip.tracks.find((t) => t.name.endsWith('.position'));
+  const posTrack = clip.tracks.find((t) => t.name.endsWith(".position"));
   if (!posTrack) return;
-  const rotTrack = clip.tracks.find((t) => t.name.endsWith('.quaternion'));
+  const rotTrack = clip.tracks.find((t) => t.name.endsWith(".quaternion"));
 
   const posValues = posTrack.values;
   const count = posValues.length / 3;
@@ -100,9 +103,10 @@ function blendTrackTowardPose(clip, targetPosition, targetQuaternion, weightForP
     const idx = i * 3;
     current.fromArray(posValues, idx);
 
-    const progress = pathLengthSq === 0
-      ? 0
-      : THREE.MathUtils.clamp(current.clone().sub(start).dot(path) / pathLengthSq, 0, 1);
+    const progress =
+      pathLengthSq === 0
+        ? 0
+        : THREE.MathUtils.clamp(current.clone().sub(start).dot(path) / pathLengthSq, 0, 1);
     const weight = weightForProgress(progress);
 
     blendedPos.copy(current).lerp(targetPosition, weight);
@@ -130,20 +134,6 @@ export default function Scene() {
   const cinematicCameraRef = useRef(null);
   const cinematicMixerRef = useRef(null);
   const cinematicClipsRef = useRef([]);
-
-  const zoomAnchorMeshesRef = useRef({
-    legs: null,
-    speaker: null,
-    texture: null,
-  });
-
-  const defaultCameraPositionRef = useRef(null);
-  const cameraTweenRef = useRef(null);
-
-  const { selected } = useConfigurator();
-  // The sub-clip trimmed out of "CameraAction" for the turntable step (see
-  // TURNTABLE_CLIP_FRAME_RANGE above) — played forward for the intro and
-  // backward for the outro.
   // Sub-clip trimmed from "CameraAction" (see TURNTABLE_CLIP_FRAME_RANGE) —
   // forward for the intro, backward for the outro.
   const cinematicTurntableClipRef = useRef(null);
@@ -154,6 +144,16 @@ export default function Scene() {
   const cameraRef = useRef(null);
   const controlsRef = useRef(null);
   const prevActivePartRef = useRef(null);
+
+  const zoomAnchorMeshesRef = useRef({
+    legs: null,
+    speaker: null,
+    texture: null,
+  });
+
+  const defaultCameraPositionRef = useRef(null);
+  const cameraTweenRef = useRef(null);
+
   const { selected, activePart } = useConfigurator();
   const { isDarkMode } = useTheme();
 
@@ -248,56 +248,22 @@ export default function Scene() {
       scene.environment = texture;
     });
 
-    loadProductModel(productModelUrl)
-      .then(({ model, lights, cameras, animations }) => {
+    Promise.all([
+      loadProductModel(productModelUrl),
+      loadCameraAnimation(cameraModelUrl),
+    ])
+      .then(([{ model, lights, cameras, animations }, cinematic]) => {
+        if (cancelled) return;
+
         prepareProductModel(model);
 
-        // Baked-in camera + clips (e.g. a zoom-to-area fly-through), fetched
-        // for later use — this doesn't touch the orbit `camera`/`controls` below.
-        cinematicCameraRef.current = cameras[0] ?? null;
-        cinematicClipsRef.current = animations;
-        if (cameras.length > 0 && animations.length > 0) {
-          cinematicMixerRef.current = new THREE.AnimationMixer(model);
-      prepareProductModel(model);
-
-      // Baked-in camera + clips, fetched for later use; doesn't touch the orbit camera/controls.
-      cinematicCameraRef.current = cameras[0] ?? null;
-      cinematicClipsRef.current = animations;
-      if (cameras.length > 0 && animations.length > 0) {
-        cinematicMixerRef.current = new THREE.AnimationMixer(model);
-      }
-
-      model.scale.set(1, 1, 1);
-      model.position.set(-0.4, 0, 0);
-      scene.add(model);
-
-      modelRef.current = model;
-
-      const materialsByName = collectMaterialsByName(model);
-      materialsByNameRef.current = materialsByName;
-
-      applyFixedMaterials(model, materialsByName);
-
-      applyConfiguratorSelection(model, selectedRef.current, materialsByName);
-
-      // Sizes the fallback shadow frustum / frames the camera when there's no baked-in camera.
-      const productBounds = getProductBounds(model);
-
-      console.log('[Scene] lights from GLB:', getLightColors(lights));
-      console.log('[Scene] cameras from GLB:', getCameraViews(cameras));
-      console.log('[Scene] animation clips from GLB:', animations.map((clip) => clip.name));
-
-      // GLB lights are already in the scene; enable shadow casting so
-      // Scene_White/Orange's receiveShadow has something to receive.
-      // Blender exports physically-based candela values that blow out this
-      // scene's tone mapping, so intensities are re-tuned by hand per light.
-      const GLB_LIGHT_INTENSITY_BY_NAME = {
-        Scene_Light_Top: 20,
-        Scene_Light_Front: 10,
-      };
-      lights.forEach((light) => {
-        if (light.name in GLB_LIGHT_INTENSITY_BY_NAME) {
-          light.intensity = GLB_LIGHT_INTENSITY_BY_NAME[light.name];
+        // Baked-in cinematic camera + its clips come from cameraModelUrl —
+        // productModelUrl's export doesn't carry the turntable camera bake.
+        // Kept alongside (not instead of) the orbit `camera` below.
+        cinematicCameraRef.current = cinematic.camera;
+        cinematicClipsRef.current = cinematic.animations;
+        if (cinematic.camera && cinematic.animations.length > 0) {
+          cinematicMixerRef.current = new THREE.AnimationMixer(cinematic.camera);
         }
 
         model.scale.set(1, 1, 1);
@@ -314,8 +280,7 @@ export default function Scene() {
         applyConfiguratorSelection(model, selectedRef.current, materialsByName);
         zoomAnchorMeshesRef.current = getZoomAnchorMeshes(model);
 
-        // Sizes the fallback lights' shadow frustum and frames the camera
-        // when the export has no baked-in camera.
+        // Sizes the fallback shadow frustum / frames the camera when there's no baked-in camera.
         const productBounds = getProductBounds(model);
 
         console.log("[Scene] lights from GLB:", getLightColors(lights));
@@ -324,16 +289,16 @@ export default function Scene() {
           "[Scene] animation clips from GLB:",
           animations.map((clip) => clip.name),
         );
+        console.log(
+          "[Scene] cinematic camera/clips from CAM_ANIM GLB:",
+          cinematic.camera?.name,
+          cinematic.animations.map((clip) => clip.name),
+        );
 
-        // WEBBTO3D_FINAL_TEST.glb has its own baked-in lights (KHR_lights_punctual),
-        // already added to the scene as part of `scene.add(model)` above — enable
-        // shadow casting on them so Scene_White/Orange's receiveShadow has something
-        // to receive, same as the manual fallback lights used to provide.
-        //
-        // Blender's glTF exporter writes physically-based candela values (tens of
-        // thousands here) meant for a physically-correct exposure pipeline, which
-        // blows out this scene's tone mapping/exposure — so intensities are
-        // re-tuned by hand per light, matching the values from threejs.org/editor.
+        // GLB lights are already in the scene; enable shadow casting so
+        // Scene_White/Orange's receiveShadow has something to receive.
+        // Blender exports physically-based candela values that blow out this
+        // scene's tone mapping, so intensities are re-tuned by hand per light.
         const GLB_LIGHT_INTENSITY_BY_NAME = {
           Scene_Light_Top: 20,
           Scene_Light_Front: 10,
@@ -354,8 +319,7 @@ export default function Scene() {
           // Use the first exported camera's framing as the starting view.
           camera.position.copy(cameras[0].position);
           camera.quaternion.copy(cameras[0].quaternion);
-          // Baked camera has no orbit target — without this, orbiting pivots
-          // around the origin instead of the product.
+          // Baked camera has no orbit target; without this, orbiting pivots around the origin.
           if (!productBounds.isEmpty()) {
             controls.target.copy(productBounds.getCenter(new THREE.Vector3()));
             controls.update();
@@ -366,8 +330,7 @@ export default function Scene() {
             const center = productBounds.getCenter(new THREE.Vector3());
             const boxSize = productBounds.getSize(new THREE.Vector3());
             const maxDim = Math.max(boxSize.x, boxSize.y, boxSize.z);
-            const fitDistance =
-              maxDim / 2 / Math.tan((camera.fov * Math.PI) / 360);
+            const fitDistance = (maxDim / 2) / Math.tan((camera.fov * Math.PI) / 360);
 
             camera.near = fitDistance / 100;
             camera.far = fitDistance * 100;
@@ -393,64 +356,43 @@ export default function Scene() {
           .add(new THREE.Vector3().setFromSpherical(spherical));
         controls.update();
 
-        // Remember this as the "zoomed out" / default view to tween back to
+        // Remember this as the "zoomed out" / default view to tween back to.
         defaultCameraPositionRef.current = camera.position.clone();
+
+        // Build the turntable sub-clip now that the on-load view is settled, so
+        // it blends from that exact pose (otherwise the fly-through would
+        // jump). Note controls.min/maxPolarAngle/AzimuthAngle above can still
+        // clamp this view.
+        if (cinematicMixerRef.current) {
+          const reloadPosition = camera.position.clone();
+          const reloadQuaternion = camera.quaternion.clone();
+
+          const [clipStart, clipEnd] = TURNTABLE_CLIP_FRAME_RANGE;
+          cinematicTurntableClipRef.current = THREE.AnimationUtils.subclip(
+            cinematic.animations[0],
+            "CameraTurntableIntro",
+            clipStart,
+            clipEnd,
+            CAMERA_ACTION_FPS,
+          );
+          // Ramp 1 -> 0: starts on the on-load view, fades out by the close-up.
+          blendTrackTowardPose(
+            cinematicTurntableClipRef.current,
+            reloadPosition,
+            reloadQuaternion,
+            (p) => 1 - p,
+          );
+          // Ramp 0 -> 1: shifts the close-up itself further left.
+          offsetPositionTrack(
+            cinematicTurntableClipRef.current,
+            TURNTABLE_CAMERA_OFFSET,
+            (p) => p,
+          );
+        }
       })
       .catch((error) => {
         console.error("[Scene]", error);
       });
-
-      if (cameras.length > 0) {
-        // Use the first exported camera's framing as the starting view.
-        camera.position.copy(cameras[0].position);
-        camera.quaternion.copy(cameras[0].quaternion);
-        // Baked camera has no orbit target; without this, orbiting pivots around the origin.
-        if (!productBounds.isEmpty()) {
-          controls.target.copy(productBounds.getCenter(new THREE.Vector3()));
-          controls.update();
-        }
-      } else {
-        // No baked camera — frame on the product's bounding box instead.
-        if (!productBounds.isEmpty()) {
-          const center = productBounds.getCenter(new THREE.Vector3());
-          const boxSize = productBounds.getSize(new THREE.Vector3());
-          const maxDim = Math.max(boxSize.x, boxSize.y, boxSize.z);
-          const fitDistance = (maxDim / 2) / Math.tan((camera.fov * Math.PI) / 360);
-
-          camera.near = fitDistance / 100;
-          camera.far = fitDistance * 100;
-          camera.position.set(center.x, center.y, center.z + fitDistance * 1.4);
-          camera.updateProjectionMatrix();
-
-          controls.target.copy(center);
-          controls.update();
-        }
-      }
-
-      // Build the turntable sub-clip now that the on-load view is settled, so
-      // it blends from that exact pose (otherwise the fly-through would
-      // jump). Note controls.min/maxPolarAngle/AzimuthAngle below can still
-      // clamp this view.
-      if (cinematicMixerRef.current) {
-        const reloadPosition = camera.position.clone();
-        const reloadQuaternion = camera.quaternion.clone();
-
-        const [clipStart, clipEnd] = TURNTABLE_CLIP_FRAME_RANGE;
-        cinematicTurntableClipRef.current = THREE.AnimationUtils.subclip(
-          animations[0],
-          'CameraTurntableIntro',
-          clipStart,
-          clipEnd,
-          CAMERA_ACTION_FPS
-        );
-        // Ramp 1 -> 0: starts on the on-load view, fades out by the close-up.
-        blendTrackTowardPose(cinematicTurntableClipRef.current, reloadPosition, reloadQuaternion, (p) => 1 - p);
-        // Ramp 0 -> 1: shifts the close-up itself further left.
-        offsetPositionTrack(cinematicTurntableClipRef.current, TURNTABLE_CAMERA_OFFSET, (p) => p);
-      }
-    }).catch((error) => {
-      console.error('[Scene]', error);
-    });
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
@@ -473,11 +415,17 @@ export default function Scene() {
     const animate = (timestamp) => {
       frameId = requestAnimationFrame(animate);
       timer.update(timestamp);
-      const delta = timer.getDelta();
+      cinematicMixerRef.current?.update(timer.getDelta());
 
-      cinematicMixerRef.current?.update(delta);
-
-      if (cameraTweenRef.current) {
+      if (cameraLockedRef.current) {
+        // A cinematic clip is driving the camera (or just finished and is
+        // holding its final frame) — mirror its pose instead of fighting OrbitControls.
+        camera.position.copy(cinematicCameraRef.current.position);
+        camera.quaternion.copy(cinematicCameraRef.current.quaternion);
+      } else if (cameraTweenRef.current) {
+        // A zoom-to-anchor tween is driving the camera — same idea as the
+        // cinematic lock above: skip controls.update() so it doesn't fight
+        // the position we're setting here.
         const tween = cameraTweenRef.current;
 
         if (!tween.startPosition) {
@@ -509,6 +457,8 @@ export default function Scene() {
           camera.lookAt(lookAtTarget);
           cameraTweenRef.current = null;
         }
+      } else {
+        controls.update();
       }
 
       const width = mount.clientWidth;
@@ -522,7 +472,7 @@ export default function Scene() {
           continue;
         }
 
-        const anchorPosition = getZoomAnchorPosition(target, mesh); // ← delad funktion
+        const anchorPosition = getZoomAnchorPosition(target, mesh);
         anchorPosition.project(camera);
 
         const x = (anchorPosition.x * 0.5 + 0.5) * width;
@@ -533,15 +483,6 @@ export default function Scene() {
           y,
           visible: anchorPosition.z >= -1 && anchorPosition.z <= 1,
         };
-      cinematicMixerRef.current?.update(timer.getDelta());
-
-      if (cameraLockedRef.current) {
-        // A cinematic clip is driving the camera (or just finished and is
-        // holding its final frame) — mirror its pose instead of fighting OrbitControls.
-        camera.position.copy(cinematicCameraRef.current.position);
-        camera.quaternion.copy(cinematicCameraRef.current.quaternion);
-      } else {
-        controls.update();
       }
 
       renderer.render(scene, camera);
@@ -578,8 +519,8 @@ export default function Scene() {
     const clip = cinematicTurntableClipRef.current;
     if (!mixer || !controls || !cinematicCameraRef.current || !clip) return;
 
-    const enteringTurntable = activePart === 'turntable' && prevActivePart !== 'turntable';
-    const leavingTurntable = prevActivePart === 'turntable' && activePart !== 'turntable';
+    const enteringTurntable = activePart === "turntable" && prevActivePart !== "turntable";
+    const leavingTurntable = prevActivePart === "turntable" && activePart !== "turntable";
     if (!enteringTurntable && !leavingTurntable) return;
 
     // Pointer input is ignored outright while a clip is playing.
@@ -596,22 +537,22 @@ export default function Scene() {
 
     const handleFinished = (event) => {
       if (event.action !== action) return;
-      mixer.removeEventListener('finished', handleFinished);
+      mixer.removeEventListener("finished", handleFinished);
       controls.enabled = true;
 
       if (enteringTurntable) {
         // Stay parked on the close-up until the user's first drag.
         const handleDragStart = () => {
           cameraLockedRef.current = false;
-          controls.removeEventListener('start', handleDragStart);
+          controls.removeEventListener("start", handleDragStart);
         };
-        controls.addEventListener('start', handleDragStart);
+        controls.addEventListener("start", handleDragStart);
       } else {
         // Back at the on-load view — no reason to keep it locked.
         cameraLockedRef.current = false;
       }
     };
-    mixer.addEventListener('finished', handleFinished);
+    mixer.addEventListener("finished", handleFinished);
   }, [activePart]);
 
   return (

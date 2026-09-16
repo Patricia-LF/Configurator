@@ -37,11 +37,6 @@ const SPEAKER_GRILLE_MATERIAL = {
   Dark: "Speaker_Dark",
 };
 
-const TURNTABLE_OUTER_MATERIAL = {
-  Basic: "Recordplayer_Turntable_Outer_Matte",
-  Acrylic: "Recordplayer_Turntable_Outer_Acrylic",
-};
-
 /**
  * @param {object} selected - ConfiguratorContext's `selected` state
  * @returns {{ visibleMeshNames: Set<string>, materialByMesh: Record<string, string> }}
@@ -63,9 +58,6 @@ export function getModelState(selected) {
     // Turntable body ships material-less (like Recordplayer_Cover) — the swatch
     // material names follow "Recordplayer_Base_<Color>", matching the option values.
     Recordplayer_Base: `Recordplayer_Base_${selected.turntable.baseColor}`,
-    // The platter disk itself — Recordplayer_Turntable_Inner underneath is
-    // unaffected by this choice.
-    Recordplayer_Turntable_Outer: TURNTABLE_OUTER_MATERIAL[selected.turntable.basePlatter],
   };
 
   // No speaker cutout on the small cabinet — leave Speaker/NS_* out entirely.
