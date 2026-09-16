@@ -53,10 +53,6 @@
   line-height: normal;
 }
 
-.textOption:hover {
-  background: var(--button-bg);
-}
-
 /* Swatch buttons - material/color, shown as background image or hex color */
 .swatch {
   border-radius: 12px;
@@ -81,6 +77,12 @@
 .compact {
   min-width: 90px;
   padding: 8px 10px;
+  background: none;
+}
+
+.textOption:hover,
+.compact:hover {
+  background: var(--button-bg);
 }
 
 .optionValue {
@@ -98,7 +100,8 @@
 }
 
 /* Active state for plain text buttons */
-.textOption.active {
+.textOption.active,
+.compact.active {
   border: 3px solid var(--border);
   background: var(--button-bg);
   outline: 1px solid var(--border);
