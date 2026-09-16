@@ -88,5 +88,5 @@ p {
 }
 
 .checkout-btn:hover {
-  background: var(--card-bg);
+  background: var(--button-bg);
 }
