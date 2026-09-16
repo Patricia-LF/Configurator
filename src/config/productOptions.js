@@ -40,9 +40,9 @@ export const legMaterialBaseOptions = [
 // Parts that always use one material regardless of the configurator
 // selection — the export ships them material-less otherwise.
 export const FIXED_MATERIAL_BY_MESH = {
-  Recordplayer_Cover: 'Recordplayer_Cover_Glass',
-  Recordplayer_Turntable_Inner: 'Recordplayer_Turntable_Outer_Matte',
-  Recordplayer_Turntable_Outer: 'Recordplayer_Turntable_Outer_Matte',
+  Recordplayer_Cover: "Recordplayer_Cover_Glass",
+  Recordplayer_Turntable_Inner: "Recordplayer_Turntable_Outer_Matte",
+  Recordplayer_Turntable_Outer: "Recordplayer_Turntable_Outer_Matte",
 };
 
 export const productOptions = {
@@ -73,7 +73,7 @@ export const productOptions = {
       options: [
         { label: "Dark", value: "Dark", price: 0 },
         { label: "Light", value: "Light", price: 0 },
-        { label: "No Fabric", value: "No Fabric", price: 0 },
+        { label: "None", value: "None", price: 0 },
       ],
     },
   },

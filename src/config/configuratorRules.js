@@ -44,17 +44,26 @@ const SPEAKER_GRILLE_MATERIAL = {
 export function getModelState(selected) {
   const size = CABINET_SIZE_TOKEN[selected.size.length];
   const veneer = selected.materials.woodVeneer;
-  const cabinetMesh = selected.materials.surface === "Smooth" ? "Cabinet_Smooth" : "Cabinet_Textured";
+  const cabinetMesh =
+    selected.materials.surface === "Smooth"
+      ? "Cabinet_Smooth"
+      : "Cabinet_Textured";
 
   // The backdrop mesh is size-invariant in this export (just Scene_White /
   // Scene_Orange, no _Small/_Large suffix) unlike Console_/Legs_.
-  const visibleMeshNames = new Set([`Console_${size}`, `Legs_${size}`, `Scene_${selected.scene.background}`, cabinetMesh]);
+  const visibleMeshNames = new Set([
+    `Console_${size}`,
+    `Legs_${size}`,
+    `Scene_${selected.scene.background}`,
+    cabinetMesh,
+  ]);
 
   const materialByMesh = {
     [`Console_${size}`]: veneer,
     [cabinetMesh]: veneer,
     // legs material may also be the cabinet's own veneer name — already a valid material, pass through.
-    [`Legs_${size}`]: LEG_MATERIAL_NAME[selected.materials.legs] ?? selected.materials.legs,
+    [`Legs_${size}`]:
+      LEG_MATERIAL_NAME[selected.materials.legs] ?? selected.materials.legs,
     // Turntable body ships material-less (like Recordplayer_Cover) — the swatch
     // material names follow "Recordplayer_Base_<Color>", matching the option values.
     Recordplayer_Base: `Recordplayer_Base_${selected.turntable.baseColor}`,
@@ -63,16 +72,18 @@ export function getModelState(selected) {
   // No speaker cutout on the small cabinet — leave Speaker/NS_* out entirely.
   if (isSpeakerAllowed(selected)) {
     if (selected.speaker.included === "Yes") {
-      if (selected.speaker.grille === "No Fabric") {
+      if (selected.speaker.grille === "None") {
         // No fabric grille — the speaker driver and its mounting screws sit exposed.
         visibleMeshNames.add("Speaker_Open");
         visibleMeshNames.add("Speaker_Screws");
       } else {
         visibleMeshNames.add("Speaker");
-        materialByMesh.Speaker = SPEAKER_GRILLE_MATERIAL[selected.speaker.grille];
+        materialByMesh.Speaker =
+          SPEAKER_GRILLE_MATERIAL[selected.speaker.grille];
       }
     } else {
-      const nsMesh = selected.materials.surface === "Smooth" ? "NS_Smooth" : "NS_Textured";
+      const nsMesh =
+        selected.materials.surface === "Smooth" ? "NS_Smooth" : "NS_Textured";
       visibleMeshNames.add(nsMesh);
       materialByMesh[nsMesh] = veneer;
     }

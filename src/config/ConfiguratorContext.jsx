@@ -1,9 +1,13 @@
 // Sets a start value through productOptions.js, and keeps tab on the selected value
 
 import { createContext, useState } from "react";
-import { productOptions } from "./productOptions";
+import { productOptions, legMaterialBaseOptions } from "./productOptions";
 
 export const ConfiguratorContext = createContext(null);
+
+const BASE_LEG_MATERIAL_VALUES = new Set(
+  legMaterialBaseOptions.map((option) => option.value),
+);
 
 // Builds initial selected state from each option's first available choice
 function getInitialState() {
@@ -32,13 +36,29 @@ export function ConfiguratorProvider({ children }) {
   // Speaker fields are left as-is on "118cm" — isSpeakerAllowed (configuratorRules.js)
   // handles hiding/disabling them, so the choice is preserved if size changes back.
   function setOption(part, param, value) {
-    setSelected((prev) => ({
-      ...prev,
-      [part]: {
-        ...prev[part],
-        [param]: value,
-      },
-    }));
+    setSelected((prev) => {
+      const next = {
+        ...prev,
+        [part]: {
+          ...prev[part],
+          [param]: value,
+        },
+      };
+
+      // Keep the legs' wood finish in sync with the cabinet's wood veneer —
+      // but only while the legs are currently set to a wood finish, not Silver/Gold.
+      const legsFollowWood =
+        part === "materials" &&
+        param === "woodVeneer" &&
+        prev.materials.legs &&
+        !BASE_LEG_MATERIAL_VALUES.has(prev.materials.legs);
+
+      if (legsFollowWood) {
+        next.materials = { ...next.materials, legs: value };
+      }
+
+      return next;
+    });
   }
 
   const value = { selected, setOption, activePart, setActivePart };

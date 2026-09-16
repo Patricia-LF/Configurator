@@ -78,11 +78,23 @@
   box-shadow: 0px 0px 2px 2px var(--border);
 }
 
+.compact {
+  min-width: 90px;
+  padding: 8px 10px;
+}
+
 .optionValue {
   color: var(--text);
   font-family: var(--clash-font);
   font-size: 16px;
   line-height: normal;
+}
+
+.default {
+  border: 3px solid var(--border);
+  background: none;
+  outline: 1px solid var(--border);
+  outline-offset: 2px;
 }
 
 /* Active state for plain text buttons */
