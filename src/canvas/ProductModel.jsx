@@ -3,7 +3,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { getModelState } from "../config/configuratorRules";
 import { FIXED_MATERIAL_BY_MESH } from "../config/productOptions";
 
-export const productModelUrl = "/models/3DTOWEBB_FINAL_TEST_UPDATE.glb";
+export const productModelUrl = "/models/3DTOWEBB_BACKGROUND_FIX.glb";
 // This separate export carries the baked-in "Camera" node + its animation
 // clip (used for the turntable fly-through) — productModelUrl's export
 // doesn't include them.
