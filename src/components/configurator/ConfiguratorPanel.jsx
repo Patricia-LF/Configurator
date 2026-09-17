@@ -27,17 +27,14 @@ function ConfiguratorPanel() {
 
   const scrollContainerRef = useRef(null);
 
-  // Lets other parts of the app (e.g. Scene's cinematic camera) react to the
-  // user reaching a given step, such as "turntable".
-  useEffect(() => {
-    setActivePart(partKeys[currentStepIndex]);
-  }, [currentStepIndex]);
-
   function handleOptionChange(partKey, paramKey, value) {
     setOption(partKey, paramKey, value);
-    // Also fires for cards other than the current step, e.g. re-editing an
-    // earlier card once every step is visible — Scene's cinematic camera
-    // uses this to notice the user has moved on from the turntable card.
+    // Lets other parts of the app (e.g. Scene's cinematic camera) react to
+    // the user actually picking an option on a given card — e.g. clicking a
+    // turntable base color — rather than merely scrolling to it. Also fires
+    // for cards other than the current step, e.g. re-editing an earlier
+    // card once every step is visible — Scene's cinematic camera uses this
+    // to notice the user has moved on from the turntable card.
     setActivePart(partKey);
 
     setTouchedParams((prev) => {
