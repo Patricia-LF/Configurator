@@ -41,7 +41,7 @@ export const legMaterialBaseOptions = [
 // selection — the export ships them material-less otherwise.
 export const FIXED_MATERIAL_BY_MESH = {
   Recordplayer_Cover: "Recordplayer_Cover_Glass",
-  Recordplayer_Turntable_Inner: "Recordplayer_Turntable_Outer_Matte",
+  Recordplayer_Turntable_Inner: "Recordplayer_Turntable_Inner",
   Recordplayer_Turntable_Outer: "Recordplayer_Turntable_Outer_Matte",
 };
 
