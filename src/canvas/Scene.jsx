@@ -458,7 +458,7 @@ export default function Scene() {
     // The minDistance is set to a value that keeps the camera from going inside the product.
     controls.minDistance = ZOOM_DISTANCE;
     // The maxDistance is set to a value that allows the camera to orbit around the product without going too far away.
-    controls.maxDistance = 4.9;
+    controls.maxDistance = 6;
     // Polar angle is measured from straight up, so raising this floor is
     // what limits how far the camera can swing above the product.
     controls.minPolarAngle = 0.9;
