@@ -1,7 +1,5 @@
 # Configurator
 
-# Configurator
-
 An interactive 3D web configurator for a media console with a built-in vinyl player. Built with React and three.js, it lets you customize the console in real time — size, materials, wood finish, speaker setup, and turntable details — while watching the changes render live on the 3D model. Zoom into specific parts for a closer look, switch between light and dark themes, and see the total price update as you configure.
 
 ## Installation
