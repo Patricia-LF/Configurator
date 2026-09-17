@@ -154,4 +154,4 @@ backgrounds
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [MIT License](LICENSE) — Copyright (c) 2026 Nathalie Rosenkvist & Patricia Loayza Frykberg.
