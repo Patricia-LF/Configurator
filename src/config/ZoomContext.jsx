@@ -1,3 +1,6 @@
+// ZoomContext.jsx
+// Holds which part (if any) is currently zoomed into, and the live on-screen
+// position of each zoom target's hotspot — shared by ZoomButton and Scene.
 import { createContext, useRef, useState } from "react";
 
 export const ZoomContext = createContext(null);

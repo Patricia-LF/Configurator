@@ -94,7 +94,7 @@ export function getModelState(selected) {
 
 // Speaker options are unavailable when the smaller cabinet size is selected
 export function isSpeakerAvailable(cabinetSize) {
-  return cabinetSize !== "118cm"; // adjust to whichever value represents the smaller size
+  return cabinetSize !== "118cm";
 }
 
 export const speakerUnavailableMessage =

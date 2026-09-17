@@ -129,7 +129,7 @@ const MANAGED_PREFIXES = [
   "Console_",
   "Legs_",
   "Cabinet_",
-  "NS_",
+  "NS_", // no speaker
   "Speaker",
   "Scene_",
 ];
@@ -214,6 +214,8 @@ export function applyConfiguratorSelection(model, selected, materialsByName) {
   });
 }
 
+// Returns the current mesh behind each zoom target (legs/speaker/texture),
+// shared by both the hotspot buttons and the camera zoom logic.
 export function getZoomAnchorMeshes(model) {
   const anchors = {
     legs: null,

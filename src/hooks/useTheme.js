@@ -1,3 +1,5 @@
+// useTheme.js
+// Convenience hook for reading isDarkMode/toggleTheme from ThemeContext.
 import { useContext } from "react";
 import { ThemeContext } from "../config/ThemeContext";
 

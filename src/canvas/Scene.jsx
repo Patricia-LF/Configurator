@@ -22,14 +22,19 @@ import { useZoom } from "../hooks/useZoom";
 
 const hdriUrl = "/models/studio.hdr";
 
+// Easing curve for camera tweens: fast start, gentle slowdown near the end.
 function easeOutCubic(progress) {
   return 1 - Math.pow(1 - progress, 3);
 }
 
+// Stronger version of easeOutCubic — slows down more noticeably at the end.
 function easeOutQuint(progress) {
   return 1 - Math.pow(1 - progress, 5);
 }
 
+// Computes the world-space point a zoom target should aim at, based on the
+// mesh's bounding box — offset toward a corner for speaker/legs so the
+// camera favors that part rather than the mesh's overall center.
 function getZoomAnchorPosition(target, mesh) {
   const box = new THREE.Box3().setFromObject(mesh);
   const center = box.getCenter(new THREE.Vector3());
@@ -183,6 +188,8 @@ export default function Scene() {
 
   const { zoomTarget, anchorPositionsRef, triggerZoom } = useZoom();
 
+  // Starts a camera tween toward targetPosition; startPosition is filled in on
+  // the next animate() frame from the camera's actual current position.
   function startCameraTween(targetPosition, target) {
     if (!targetPosition) return;
     cameraTweenRef.current = {
@@ -219,10 +226,13 @@ export default function Scene() {
     }
   }, [selected, isDarkMode]);
 
-  const ZOOM_DISTANCE = 2; // how close the camera gets to the anchor — tune to taste
+  const ZOOM_DISTANCE = 2; // how close the camera gets to the anchor
 
   const zoomTargetRef = useRef(null); // mirrors zoomTarget, since the animate() effect has [] deps
 
+  // Starts a tween toward the selected zoom target's anchor point (moving the
+  // camera in along the line from the default view to that anchor), or back
+  // to the default view when zoomTarget is cleared.
   useEffect(() => {
     zoomTargetRef.current = zoomTarget;
 

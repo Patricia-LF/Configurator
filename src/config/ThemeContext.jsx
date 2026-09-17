@@ -1,4 +1,6 @@
 // ThemeContext.jsx
+// Holds the app-wide dark/light mode state — defaults to dark mode —
+// so any component can read isDarkMode and call toggleTheme() to switch.
 import { createContext, useState } from "react";
 
 export const ThemeContext = createContext(null);

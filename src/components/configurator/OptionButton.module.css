@@ -74,6 +74,7 @@
   box-shadow: 0px 0px 2px 2px var(--border);
 }
 
+/*Smaller text buttons for grille options */
 .compact {
   min-width: 90px;
   padding: 8px 10px;

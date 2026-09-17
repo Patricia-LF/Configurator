@@ -1,3 +1,5 @@
+// useZoom.js
+// Convenience hook for reading/triggering zoom state from ZoomContext.
 import { useContext } from "react";
 import { ZoomContext } from "../config/ZoomContext";
 

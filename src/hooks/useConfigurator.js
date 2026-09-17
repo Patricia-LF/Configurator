@@ -1,5 +1,6 @@
-// Hook that can read and change values
-
+// useConfigurator.js
+// Convenience hook for reading/updating the configurator's selected state
+// from ConfiguratorContext.
 import { useContext } from "react";
 import { ConfiguratorContext } from "../config/ConfiguratorContext";
 

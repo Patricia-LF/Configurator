@@ -45,8 +45,9 @@ export const FIXED_MATERIAL_BY_MESH = {
   Recordplayer_Turntable_Outer: "Recordplayer_Turntable_Outer_Matte",
 };
 
-//Options for every part in the configurator.
-//If default isn´t set the first option is automatically set as default to have something show up on the page.
+// Defines every configurable part and its options.
+// A param without "default" falls back to its first option, so the page
+// always has something selected on load.
 export const productOptions = {
   size: {
     length: {
