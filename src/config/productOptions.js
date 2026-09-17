@@ -45,6 +45,8 @@ export const FIXED_MATERIAL_BY_MESH = {
   Recordplayer_Turntable_Outer: "Recordplayer_Turntable_Outer_Matte",
 };
 
+//Options for every part in the configurator.
+//If default isn´t set the first option is automatically set as default to have something show up on the page.
 export const productOptions = {
   size: {
     length: {
@@ -81,6 +83,7 @@ export const productOptions = {
   materials: {
     surface: {
       label: "Cabinet Surface",
+      default: "Smooth",
       options: [
         { label: "Smooth", value: "Smooth", price: 0 },
         { label: "Textured", value: "Textured", price: 2000 },
@@ -88,6 +91,7 @@ export const productOptions = {
     },
     woodVeneer: {
       label: "Wood Type",
+      default: "Walnut",
       options: woodVeneerOptions,
     },
 
@@ -101,6 +105,7 @@ export const productOptions = {
   turntable: {
     baseColor: {
       label: "Base Color",
+      default: "White",
       options: [
         { label: "White", value: "White", background: "#FFFBF8", price: 0 },
         { label: "Black", value: "Black", background: "#211E1E", price: 0 },
