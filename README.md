@@ -67,7 +67,7 @@ project-root/
 │   │   ├── 3DTOWEBB_CAMERA.glb      # baked-in cinematic turntable camera + clip
 │   │   ├── hochsal.hdr
 │   │   └── studio.hdr
-│   └── textures/                    # material/wood swatch images used as button 
+│   └── textures/                    # material/wood swatch images used as button
 │   └── favicon-32x32.png
 backgrounds
 │
@@ -141,6 +141,14 @@ backgrounds
 
 - **Port already in use** — Vite automatically picks the next available port if `5173` is taken; check the terminal output for the correct URL.
 - **`npm install` fails** — make sure you're running a recent enough Node.js version (`node -v`).
+
+## Future Improvements
+
+- **Size card navigation edge case** — if the user scrolls back and changes the cabinet size after completing the configuration flow, the panel can occasionally break, since the number of visible cards changes depending on size (the Speaker card only exists for the large size).
+- **Explicit turntable zoom control** — zooming into the turntable currently happens automatically when a Base Color is selected, and zooms back out only when moving to another card. A dedicated zoom button (matching legs/speaker/texture) would make this more discoverable and consistent.
+- **Responsive layout** — the configurator panel currently has a fixed width and position, and hasn't been tested or adapted for smaller screens (tablet/mobile).
+- **Loading state** — there's currently no visual indicator while the 3D model and textures are loading, which can make the page feel unresponsive on a slower connection.
+- **Accessibility** — the option buttons could use `aria-pressed` and better keyboard navigation support, so screen reader and keyboard-only users can tell which option is selected.
 
 ## Team
 
