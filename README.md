@@ -2,6 +2,13 @@
 
 An interactive 3D web configurator for a media console with a built-in vinyl player. Built with React and three.js, it lets you customize the console in real time — size, materials, wood finish, speaker setup, and turntable details — while watching the changes render live on the 3D model. Zoom into specific parts for a closer look, switch between light and dark themes, and see the total price update as you configure.
 
+## Tech Stack
+
+- [React](https://react.dev/) 19
+- [three.js](https://threejs.org/)
+- [react-player](https://github.com/cookpete/react-player) (album audio playback)
+- [Vite](https://vitejs.dev/) (dev server & build)
+
 ## Installation
 
 ### Prerequisites
@@ -114,6 +121,9 @@ project-root/
 │       ├── useTheme.js               # convenience hook wrapping ThemeContext
 │       └── useZoom.js                # convenience hook wrapping ZoomContext
 │
+├── fonts/
+│   └── ClashDisplay-Variable.ttf     # font used for --clash-font CSS variable
+│
 ├── index.html
 ├── eslint.config.js
 ├── vite.config.js
@@ -138,3 +148,7 @@ project-root/
 - Elin Ekeroth (CG)
 - Nathalie Rosenkvist (WU)
 - Patricia Loayza Frykberg (WU)
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).

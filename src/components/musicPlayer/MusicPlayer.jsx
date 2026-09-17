@@ -45,6 +45,12 @@ const album = [
     title: "Another Brick In The Wall",
     url: "https://soundhelix.com",
   },
+  {
+    id: "hotel-california",
+    artist: "Eagles",
+    title: "Hotel California",
+    url: "https://soundhelix.com",
+  },
 ];
 
 // stage moves forward once: hidden -> risen (sliding up) -> done (buttons shown)

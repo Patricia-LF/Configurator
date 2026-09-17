@@ -28,6 +28,11 @@ const disks = [
     image: "/album-images/another-brick-in-the-wall.jpg",
     title: "Disk 5",
   },
+  {
+    id: "hotel-california",
+    image: "/album-images/hotel-california.jpg",
+    title: "Disk 6",
+  },
 ];
 
 export default function AlbumSelector() {
