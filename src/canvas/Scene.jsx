@@ -47,7 +47,7 @@ function getZoomAnchorPosition(target, mesh) {
 // "CameraAction" (24fps) bakes several camera moves; this range covers
 // default -> close-up, played forward to enter and backward to leave.
 const CAMERA_ACTION_FPS = 24;
-const TURNTABLE_CLIP_FRAME_RANGE = [35, 105];
+const TURNTABLE_CLIP_FRAME_RANGE = [50, 105];
 // Shifts the close-up framing left (world X), back toward the product
 // (world Z), and up (world Y) for more of an overhead look down onto the
 // vinyl player, ramped in so the start stays unshifted.
