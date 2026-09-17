@@ -2,6 +2,8 @@
 
 An interactive 3D web configurator for a media console with a built-in vinyl player. Built with React and three.js, it lets you customize the console in real time — size, materials, wood finish, speaker setup, and turntable details — while watching the changes render live on the 3D model. Zoom into specific parts for a closer look, switch between light and dark themes, and see the total price update as you configure.
 
+![Configurator screenshot](docs/screenshot.png)
+
 ## Tech Stack
 
 - [React](https://react.dev/) 19
@@ -65,7 +67,9 @@ project-root/
 │   │   ├── 3DTOWEBB_CAMERA.glb      # baked-in cinematic turntable camera + clip
 │   │   ├── hochsal.hdr
 │   │   └── studio.hdr
-│   └── textures/                    # material/wood swatch images used as button backgrounds
+│   └── textures/                    # material/wood swatch images used as button 
+│   └── favicon-32x32.png
+backgrounds
 │
 ├── src/
 │   ├── App.jsx
@@ -129,7 +133,6 @@ project-root/
 ├── vite.config.js
 ├── package.json
 ├── package-lock.json
-├── favicon-32x32.png
 ├── LICENSE
 └── .gitignore
 ```
