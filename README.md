@@ -1,6 +1,8 @@
 # Configurator
 
-A configurator for a media consol with a built in vinyl player.
+# Configurator
+
+An interactive 3D web configurator for a media console with a built-in vinyl player. Built with React and three.js, it lets you customize the console in real time — size, materials, wood finish, speaker setup, and turntable details — while watching the changes render live on the 3D model. Zoom into specific parts for a closer look, switch between light and dark themes, and see the total price update as you configure.
 
 ## Installation
 
@@ -53,7 +55,11 @@ npm run preview
 project-root/
 ├── public/
 │   ├── album-images/                # album cover images used by VinylCoverflow
-│   ├── models/                      # .glb 3D model file(s) - named groups inside (Body, Legs, Speaker, VinylPlayer)
+│   ├── models/                      # .glb 3D model files and HDRI environment maps
+│   │   ├── 3DTOWEBB_BACKGROUND_FIX.glb
+│   │   ├── 3DTOWEBB_CAMERA.glb      # baked-in cinematic turntable camera + clip
+│   │   ├── hochsal.hdr
+│   │   └── studio.hdr
 │   └── textures/                    # material/wood swatch images used as button backgrounds
 │
 ├── src/
@@ -62,49 +68,62 @@ project-root/
 │   ├── index.css                    # global styles, CSS theme variables (--text, --bg, --border, --card-bg, --clash-font)
 │   │
 │   ├── assets/
-│   │   └── icons/                   # small bundled assets (menu, player, toggle icons)
+│   │   └── icons/                   # small bundled assets (menu, player, toggle, zoom icons)
 │   │
 │   ├── canvas/
-│   │   ├── Scene.jsx                # raw three.js scene setup (camera, renderer, lights, OrbitControls)
-│   │   └── ProductModel.jsx         # loads the .glb, exposes loadProductModel/getLightColors/getCameraViews
+│   │   ├── Scene.jsx                # raw three.js scene setup (camera, renderer, lights, OrbitControls, zoom & turntable cinematic camera)
+│   │   ├── ProductModel.jsx         # loads the .glb(s), mesh visibility/material logic, zoom anchor helpers
+│   │   └── materialLibrary.js       # collects reusable materials from swatch nodes in the model
 │   │
 │   ├── components/
 │   │   ├── configurator/
-│   │   │   ├── ConfiguratorPanel.jsx        # step-by-step card flow, position: fixed, reads productOptions + selected state
+│   │   │   ├── ConfiguratorPanel.jsx        # step-by-step card flow, reads productOptions + selected state
 │   │   │   ├── ConfiguratorPanel.module.css
 │   │   │   ├── OptionCard.jsx               # wraps each configurable part in its own card
 │   │   │   ├── OptionCard.module.css
-│   │   │   ├── OptionButton.jsx             # renders either plain text pills or material/color swatches
+│   │   │   ├── OptionButton.jsx             # renders plain text pills or material/color swatches
 │   │   │   └── OptionButton.module.css
 │   │   │
 │   │   ├── musicPlayer/
-│   │   │   ├── MusicPlayer.jsx              # floating play/pause/switch player, position: fixed
+│   │   │   ├── AlbumSelector.jsx            # album selection logic
+│   │   │   ├── MusicPlayer.jsx              # floating play/pause/next player, position: fixed
 │   │   │   ├── MusicPlayer.module.css
 │   │   │   ├── VinylCoverflow.jsx           # scrollable album disk selector, position: fixed
 │   │   │   └── VinylCoverflow.module.css
 │   │   │
-│   │   └── theme/
-│   │       ├── ToggleSwitch.jsx             # dark/light mode slider toggle, position: fixed
-│   │       └── ToggleSwitch.module.css
+│   │   ├── price/
+│   │   │   ├── TotalPrice.jsx               # displays the running total based on selected options
+│   │   │   └── TotalPrice.module.css
+│   │   │
+│   │   ├── theme/
+│   │   │   ├── ToggleSwitch.jsx             # dark/light mode slider toggle, position: fixed
+│   │   │   └── ToggleSwitch.module.css
+│   │   │
+│   │   └── zoom/
+│   │       ├── ZoomButton.jsx               # zoom-to-part buttons that track their target on screen
+│   │       └── ZoomButton.module.css
 │   │
 │   ├── config/
-│   │   ├── productOptions.js         # defines available parameters/options per part (with backgrounds for swatches)
+│   │   ├── productOptions.js         # defines available parameters/options per part (with backgrounds/prices)
 │   │   ├── ConfiguratorContext.jsx   # Context + Provider holding the currently SELECTED configurator state
-│   │   ├── configuratorRules.js      # cross-part logic (leg material follows cabinet wood, speaker availability by size)
-│   │   └── ThemeContext.jsx          # Context + Provider holding isDarkMode + toggleTheme
+│   │   ├── configuratorRules.js      # cross-part logic (leg material follows wood veneer, speaker availability by size, mesh/material mapping)
+│   │   ├── calculateTotalPrice.js    # sums selected options' prices into a total
+│   │   ├── ThemeContext.jsx          # Context + Provider holding isDarkMode + toggleTheme
+│   │   └── ZoomContext.jsx           # Context + Provider holding the active zoom target + hotspot screen positions
 │   │
 │   └── hooks/
 │       ├── useConfigurator.js        # convenience hook wrapping ConfiguratorContext
-│       └── useTheme.js               # convenience hook wrapping ThemeContext
+│       ├── useTheme.js               # convenience hook wrapping ThemeContext
+│       └── useZoom.js                # convenience hook wrapping ZoomContext
 │
 ├── index.html
 ├── eslint.config.js
 ├── vite.config.js
 ├── package.json
 ├── package-lock.json
+├── favicon-32x32.png
 ├── LICENSE
 └── .gitignore
-
 ```
 
 ### Troubleshooting
@@ -114,7 +133,7 @@ project-root/
 
 ## Team
 
-- Wilma (DD)
+- Wilma Skarström (DD)
 - Linn S. (DD)
 - Simon Torstensson (CG)
 - Arvid Wallesten (CG)
