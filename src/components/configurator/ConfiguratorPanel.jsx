@@ -50,31 +50,17 @@ function ConfiguratorPanel() {
   // Advance to the next card once every parameter on the current card has been touched
   useEffect(() => {
     const currentPart = partKeys[currentStepIndex];
-    const allParamKeys = Object.keys(productOptions[currentPart]);
-
-    const requiredParamKeys = allParamKeys.filter((paramKey) => {
-      const isGrilleParam = currentPart === "speaker" && paramKey === "grille";
-      if (isGrilleParam && !isGrilleVisible(selected.speaker.included)) {
-        return false;
-      }
-      return true;
-    });
-
+    const paramKeys = Object.keys(productOptions[currentPart]);
     const touchedCount = touchedParams[currentPart]?.size ?? 0;
 
-    if (touchedCount >= requiredParamKeys.length) {
+    if (touchedCount >= paramKeys.length) {
       if (currentStepIndex < partKeys.length - 1) {
         setCurrentStepIndex((prev) => prev + 1);
       } else {
         setIsComplete(true);
       }
     }
-  }, [
-    touchedParams,
-    currentStepIndex,
-    selected.size.length,
-    selected.speaker.included,
-  ]);
+  }, [touchedParams, currentStepIndex, selected.size.length]);
 
   // Auto-scroll to the bottom so the newest card is visible, pushing older ones out of view above
   useEffect(() => {
