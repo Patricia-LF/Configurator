@@ -142,7 +142,7 @@ project-root/
 ## Team
 
 - Wilma Skarström (DD)
-- Linn S. (DD)
+- Linn S. Mölgaard (DD)
 - Simon Torstensson (CG)
 - Arvid Wallesten (CG)
 - Elin Ekeroth (CG)
